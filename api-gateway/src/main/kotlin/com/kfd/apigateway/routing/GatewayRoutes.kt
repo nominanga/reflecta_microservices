@@ -20,11 +20,6 @@ class GatewayRoutes(
                     .uri("lb://authentication-service")
             }
             .route("auth-service") {
-                it.path("/api/auth/refresh")
-                    .filters { f -> f.filter(jwtAuthFilter) }
-                    .uri("lb://authentication-service")
-            }
-            .route("auth-service") {
                 it.path("/api/auth/**")
                     .uri("lb://authentication-service")
             }
