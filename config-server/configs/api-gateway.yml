@@ -30,9 +30,3 @@ eureka:
 
 jwt:
   access-secret: ${ACCESS_SECRET}
-
-management:
-  endpoints:
-    web:
-      exposure:
-        include: health, info, refresh

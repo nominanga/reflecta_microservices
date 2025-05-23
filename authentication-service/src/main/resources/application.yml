@@ -1,0 +1,26 @@
+spring:
+  application:
+    name: authentication-service
+
+  data:
+    redis:
+      host: ${REDIS_HOST}
+      port: ${REDIS_PORT}
+
+eureka:
+  client:
+    fetch-registry: true
+    register-with-eureka: true
+    service-url:
+      defaultZone: http://discovery:8761/eureka
+
+server:
+  port: 0
+
+jwt:
+  access:
+    secret: ${ACCESS_SECRET}
+    expiration-time: ${ACCESS_EXPIRATION_TIME}
+  refresh:
+    secret: ${REFRESH_SECRET}
+    expiration-time: ${REFRESH_EXPIRATION_TIME}

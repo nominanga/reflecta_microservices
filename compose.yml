@@ -73,20 +73,22 @@ services:
 #      postgres:
 #        condition: service_healthy
 
-#  authentication-service:
-#    container_name: reflecta-auth
-#    build:
-#      context: .
-#      dockerfile: Dockerfile
-#      args:
-#        MODULE: authentication-service
-#    networks:
-#      - reflecta-microservices
-#    depends_on:
-#      discovery:
-#        condition: service_healthy
-#      redis:
-#        condition: service_healthy
+  authentication-service:
+    container_name: reflecta-auth
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        MODULE: authentication-service
+    networks:
+      - reflecta-microservices
+    env_file:
+      .env
+    depends_on:
+      discovery:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
 
 
   redis:

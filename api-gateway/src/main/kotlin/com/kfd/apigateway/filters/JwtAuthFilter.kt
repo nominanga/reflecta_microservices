@@ -26,36 +26,36 @@ class JwtAuthFilter(
     private val objectMapper: ObjectMapper
 ) : GatewayFilter, Ordered {
 
-    @PostConstruct
-    fun testTokenValidation() {
-        logger.info("ACCESS_SECRET is {}", base64Secret)
-        val now = System.currentTimeMillis()
-
-        val token = Jwts.builder()
-            .claim("id", "42")
-            .issuedAt(Date(now))
-            .expiration(Date(now + 3600000)) // 1 hour
-            .signWith(secret)
-            .compact()
-
-        logger.info("Generated token: {}", token)
-
-        try {
-            val claims = Jwts.parser()
-                .verifyWith(secret)
-                .build()
-                .parseSignedClaims(token)
-                .payload
-
-            logger.info("Parsed claims: {}", claims)
-
-            val userId = claims["id"]?.toString()
-
-            logger.info("Parsed user id {} should equal to 42", userId)
-        } catch (e: Exception) {
-            logger.info("Problem with tokens in PostConstruct: {}", e.message)
-        }
-    }
+//    @PostConstruct
+//    fun testTokenValidation() {
+//        logger.info("ACCESS_SECRET is {}", base64Secret)
+//        val now = System.currentTimeMillis()
+//
+//        val token = Jwts.builder()
+//            .claim("id", "42")
+//            .issuedAt(Date(now))
+//            .expiration(Date(now + 3600000)) // 1 hour
+//            .signWith(secret)
+//            .compact()
+//
+//        logger.info("Generated token: {}", token)
+//
+//        try {
+//            val claims = Jwts.parser()
+//                .verifyWith(secret)
+//                .build()
+//                .parseSignedClaims(token)
+//                .payload
+//
+//            logger.info("Parsed claims: {}", claims)
+//
+//            val userId = claims["id"]?.toString()
+//
+//            logger.info("Parsed user id {} should equal to 42", userId)
+//        } catch (e: Exception) {
+//            logger.info("Problem with tokens in PostConstruct: {}", e.message)
+//        }
+//    }
 
     private val logger = LoggerFactory.getLogger(JwtAuthFilter::class.java)
 
