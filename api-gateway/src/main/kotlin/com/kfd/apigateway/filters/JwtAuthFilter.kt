@@ -114,7 +114,6 @@ class JwtAuthFilter(
             "status" to HttpStatus.UNAUTHORIZED.value(),
             "error" to "Unauthorized",
             "message" to message,
-            "path" to exchange.request.path.toString()
         )
 
         val json = objectMapper.writeValueAsString(bodyMap)

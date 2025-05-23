@@ -16,7 +16,7 @@ class JwtGenerationService (private val jwtProperties: JwtProperties){
         Base64.getDecoder().decode(jwtProperties.refresh.secret),
     )
 
-    fun generateToken(userId: Long, isAccess: Boolean): String {
+    fun generateToken(userId: String, isAccess: Boolean): String {
         val now = System.currentTimeMillis()
         val (expiration, secret) = if (isAccess) {
             jwtProperties.access.expirationTime to accessSecret
@@ -25,16 +25,16 @@ class JwtGenerationService (private val jwtProperties: JwtProperties){
         }
 
         return Jwts.builder()
-            .claim("id", userId.toString())
+            .claim("id", userId)
             .issuedAt(Date(now))
             .expiration(Date(now + expiration))
             .signWith(secret)
             .compact()
     }
 
-    fun generateAccessToken(userId: Long): String = generateToken(userId, isAccess = true)
+    fun generateAccessToken(userId: String): String = generateToken(userId, isAccess = true)
 
-    fun generateRefreshToken(userId: Long): String = generateToken(userId, isAccess = false)
+    fun generateRefreshToken(userId: String): String = generateToken(userId, isAccess = false)
 
     fun refreshTokenExpirationTime(): Long = jwtProperties.refresh.expirationTime
 }

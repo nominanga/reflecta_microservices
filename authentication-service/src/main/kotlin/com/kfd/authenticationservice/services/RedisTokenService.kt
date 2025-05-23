@@ -16,11 +16,11 @@ class RedisTokenService (
 ) {
 
     private data class RefreshTokenPayload (
-        val userId: Long,
+        val userId: String,
         val sessionId: String
     )
 
-    fun generateTokens(userId: Long): AuthResponse {
+    fun generateTokens(userId: String): AuthResponse {
 
         val accessToken = jwtGenerationService.generateAccessToken(userId)
         val refreshToken = jwtGenerationService.generateRefreshToken(userId)
@@ -45,7 +45,13 @@ class RedisTokenService (
         )
     }
 
-    fun removeRefreshToken(refreshToken: String) {
+    fun removeRefreshToken(refreshToken: String, userId: String?) {
+        val stored = redisTemplate.opsForValue().get("refresh:$refreshToken")
+            ?: throw UnauthorizedException("Refresh token is expired or invalid")
+        val data = objectMapper.readValue(stored, RefreshTokenPayload::class.java)
+        if (data.userId != userId) {
+            throw UnauthorizedException("User is unauthorized")
+        }
         redisTemplate.delete("refresh:$refreshToken")
     }
 
@@ -59,7 +65,7 @@ class RedisTokenService (
         }
         val userId = data.userId
 
-        removeRefreshToken(refreshToken)
+        removeRefreshToken(refreshToken, userId)
         return generateTokens(userId)
     }
 }

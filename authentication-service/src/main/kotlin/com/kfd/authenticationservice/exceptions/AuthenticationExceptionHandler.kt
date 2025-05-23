@@ -3,6 +3,7 @@ package com.kfd.authenticationservice.exceptions
 import org.slf4j.LoggerFactory
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
+import org.springframework.http.converter.HttpMessageNotReadableException
 import org.springframework.web.bind.MethodArgumentNotValidException
 import org.springframework.web.bind.annotation.ExceptionHandler
 import org.springframework.web.bind.annotation.RestControllerAdvice
@@ -14,7 +15,7 @@ class AuthenticationExceptionHandler {
     private val logger = LoggerFactory.getLogger(AuthenticationExceptionHandler::class.java)
 
     @ExceptionHandler(MethodArgumentNotValidException::class)
-    fun handleValidationException(ex: MethodArgumentNotValidException): ResponseEntity<Map<String, Any>> {
+    fun handleValidation(ex: MethodArgumentNotValidException): ResponseEntity<Map<String, Any>> {
         val errors = ex.bindingResult.fieldErrors.associate { it.field to (it.defaultMessage ?: "Invalid value") }
 
         val responseBody = mapOf(
@@ -29,7 +30,7 @@ class AuthenticationExceptionHandler {
     }
 
     @ExceptionHandler(InvalidCredentialsException::class)
-    fun handleInvalidCredentialsException(
+    fun handleInvalidCredentials(
         ex: InvalidCredentialsException
     ): ResponseEntity<Map<String, Any?>> {
 
@@ -44,7 +45,7 @@ class AuthenticationExceptionHandler {
     }
 
     @ExceptionHandler(UnauthorizedException::class)
-    fun handleUnauthorizedException(
+    fun handleUnauthorized(
         ex: UnauthorizedException
     ): ResponseEntity<Map<String, Any?>> {
 
@@ -58,8 +59,20 @@ class AuthenticationExceptionHandler {
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(responseBody)
     }
 
+    @ExceptionHandler(HttpMessageNotReadableException::class)
+    fun handleUnreadable(ex: HttpMessageNotReadableException): ResponseEntity<Map<String, Any?>> {
+        val body = mapOf(
+            "timestamp" to Instant.now(),
+            "status" to 400,
+            "error" to "Bad Request",
+            "message" to "Malformed or missing request body"
+        )
+        return ResponseEntity.badRequest().body(body)
+    }
+
+
     @ExceptionHandler(Exception::class)
-    fun handleInternalException(
+    fun handle(
         ex: Exception
     ): ResponseEntity<Map<String, Any?>> {
 

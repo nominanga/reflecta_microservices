@@ -48,8 +48,8 @@ class AuthenticationService(
     fun refresh(refreshToken: String, sessionId: String): AuthResponse =
         redisTokenService.refreshTokens(refreshToken, sessionId)
 
-    fun logout(refreshToken: String) {
-        redisTokenService.removeRefreshToken(refreshToken)
+    fun logout(refreshToken: String, userId: String?) {
+        redisTokenService.removeRefreshToken(refreshToken, userId)
     }
 
 }
