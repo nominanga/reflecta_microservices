@@ -1,7 +1,7 @@
 package com.kfd.authenticationservice.services.clients
 
-import com.kfd.authenticationservice.dtos.auth.requests.RegistrationRequest
-import com.kfd.authenticationservice.dtos.users.UserAuthenticationResponse
+import com.kfd.authenticationservice.dto.auth.requests.RegistrationRequest
+import com.kfd.authenticationservice.dto.users.UserAuthenticationResponse
 import org.springframework.cloud.openfeign.FeignClient
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PostMapping

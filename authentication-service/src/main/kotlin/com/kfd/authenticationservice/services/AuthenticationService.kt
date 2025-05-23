@@ -1,8 +1,8 @@
 package com.kfd.authenticationservice.services
 
-import com.kfd.authenticationservice.dtos.auth.requests.LoginRequest
-import com.kfd.authenticationservice.dtos.auth.requests.RegistrationRequest
-import com.kfd.authenticationservice.dtos.auth.responses.AuthResponse
+import com.kfd.authenticationservice.dto.auth.requests.LoginRequest
+import com.kfd.authenticationservice.dto.auth.requests.RegistrationRequest
+import com.kfd.authenticationservice.dto.auth.responses.AuthResponse
 import com.kfd.authenticationservice.exceptions.InvalidCredentialsException
 import com.kfd.authenticationservice.services.clients.UserServiceClient
 import feign.FeignException

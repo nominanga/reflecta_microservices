@@ -1,4 +1,4 @@
-package com.kfd.authenticationservice.dtos.auth.requests
+package com.kfd.authenticationservice.dto.auth.requests
 
 import jakarta.validation.constraints.Email
 import jakarta.validation.constraints.NotBlank

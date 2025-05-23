@@ -1,7 +1,7 @@
 package com.kfd.authenticationservice.services
 
 import com.fasterxml.jackson.databind.ObjectMapper
-import com.kfd.authenticationservice.dtos.auth.responses.AuthResponse
+import com.kfd.authenticationservice.dto.auth.responses.AuthResponse
 import com.kfd.authenticationservice.exceptions.UnauthorizedException
 import org.springframework.data.redis.core.StringRedisTemplate
 import org.springframework.stereotype.Service

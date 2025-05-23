@@ -1,4 +1,4 @@
-package com.kfd.authenticationservice.dtos.users
+package com.kfd.authenticationservice.dto.users
 
 data class UserAuthenticationResponse(
     val id: String,
