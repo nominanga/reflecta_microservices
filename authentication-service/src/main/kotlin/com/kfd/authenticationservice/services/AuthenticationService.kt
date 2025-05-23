@@ -3,7 +3,9 @@ package com.kfd.authenticationservice.services
 import com.kfd.authenticationservice.dtos.auth.requests.LoginRequest
 import com.kfd.authenticationservice.dtos.auth.requests.RegistrationRequest
 import com.kfd.authenticationservice.dtos.auth.responses.AuthResponse
+import com.kfd.authenticationservice.exceptions.InvalidCredentialsException
 import com.kfd.authenticationservice.services.clients.UserServiceClient
+import feign.FeignException
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder
 import org.springframework.security.crypto.password.PasswordEncoder
 import org.springframework.stereotype.Service
@@ -18,7 +20,7 @@ class AuthenticationService(
 
     fun register(request: RegistrationRequest): AuthResponse {
         if (userServiceClient.existsUserByEmail(request.email)) {
-            throw Exception("User with email ${request.email} already exists")
+            throw InvalidCredentialsException("User with email ${request.email} already exists")
         }
         val hashedPassword: String = encoder.encode(request.password)
         request.password = hashedPassword
@@ -30,12 +32,16 @@ class AuthenticationService(
     }
 
     fun login(request: LoginRequest): AuthResponse {
-        val user = userServiceClient.getUserByEmail(request.email)
+        val user = try {
+            userServiceClient.getUserByEmail(request.email)
+        } catch (e: FeignException.NotFound) {
+            throw InvalidCredentialsException("Invalid email or password")
+        }
 
         if (encoder.matches(request.password, user.hashedPassword)) {
             return redisTokenService.generateTokens(user.id)
         } else {
-            throw Exception("Wrong password")
+            throw InvalidCredentialsException("Invalid email or password")
         }
     }
 

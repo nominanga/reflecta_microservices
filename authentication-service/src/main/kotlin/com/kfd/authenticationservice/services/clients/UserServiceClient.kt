@@ -17,6 +17,6 @@ interface UserServiceClient {
     @GetMapping("/internal/user/email")
     fun getUserByEmail(@RequestParam email: String): UserAuthenticationResponse
 
-    @GetMapping("/internal/users/email/exists")
+    @GetMapping("/internal/user/email/exists")
     fun existsUserByEmail(@RequestParam email: String): Boolean
 }
