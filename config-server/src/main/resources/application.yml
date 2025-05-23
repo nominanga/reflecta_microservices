@@ -1,0 +1,17 @@
+server:
+  port: 8888
+
+spring:
+  application:
+    name: config-server
+
+  profiles:
+    active: native
+
+  cloud:
+    vault:
+      enabled: false
+    config:
+      server:
+        native:
+          search-locations: file:/configs

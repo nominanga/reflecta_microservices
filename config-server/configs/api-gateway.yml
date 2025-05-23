@@ -1,0 +1,38 @@
+server:
+  port: 8080
+
+#spring:
+#  cloud:
+#    gateway:
+#      routes:
+#        - id: authentication-service
+#          uri: lb://authentication-service
+#          predicates:
+#            - Path=/api/auth/**
+#        - id: user-service
+#          uri: lb://user-service
+#          predicates:
+#            - Path=/api/me/**
+#          filters:
+#            - JwtAuth
+#        - id: note-service
+#          uri: lb://note-service
+#          predicates:
+#            - Path=/api/notes/**
+#          filters:
+#            - JwtAuth
+eureka:
+  client:
+    service-url:
+      defaultZone: http://discovery:8761/eureka
+      register-with-eureka: true
+      fetch-registry: true
+
+jwt:
+  access-secret: ${ACCESS_SECRET}
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health, info, refresh

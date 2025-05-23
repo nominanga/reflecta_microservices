@@ -1,0 +1,4 @@
+envs/*.env
+.idea
+.gradle
+.env

@@ -1,0 +1,152 @@
+services:
+
+  config:
+    container_name: reflecta-config
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        MODULE: config-server
+    ports:
+      - "8888:8888"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8888/actuator/health"]
+      timeout: 10s
+      interval: 15s
+      start_period: 30s
+      retries: 5
+    networks:
+      - reflecta-microservices
+    volumes:
+      - ./config-server/configs:/configs
+
+  discovery:
+    container_name: reflecta-discovery
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        MODULE: discovery-server
+    networks:
+      - reflecta-microservices
+    depends_on:
+      config:
+        condition: service_healthy
+    ports:
+      - "8761:8761"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8761/actuator/health"]
+      timeout: 10s
+      interval: 15s
+      start_period: 30s
+      retries: 10
+
+  gateway:
+    container_name: reflecta-gateway
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        MODULE: api-gateway
+    environment:
+      ACCESS_SECRET: ${ACCESS_SECRET}
+    ports:
+      - "8080:8080"
+    networks:
+      - reflecta-microservices
+    depends_on:
+      discovery:
+        condition: service_healthy
+
+#  user-service:
+#    container_name: reflecta-user
+#    build:
+#      context: .
+#      dockerfile: Dockerfile
+#      args:
+#        MODULE: authentication-service
+#    networks:
+#      - reflecta-microservices
+#    depends_on:
+#      discovery:
+#        condition: service_healthy
+#      postgres:
+#        condition: service_healthy
+
+#  authentication-service:
+#    container_name: reflecta-auth
+#    build:
+#      context: .
+#      dockerfile: Dockerfile
+#      args:
+#        MODULE: authentication-service
+#    networks:
+#      - reflecta-microservices
+#    depends_on:
+#      discovery:
+#        condition: service_healthy
+#      redis:
+#        condition: service_healthy
+
+
+  redis:
+    image: redis:8.0
+    container_name: reflecta-redis
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      timeout: 10s
+      interval: 5s
+      retries: 5
+    volumes:
+      - redis-data:/data
+    restart: unless-stopped
+    networks:
+      - reflecta-microservices
+
+  kafka:
+    image: bitnami/kafka:3.6.1
+    container_name: reflecta-kafka
+    ports:
+      - "9092:9092"
+    volumes:
+      - kafka-data:/bitnami/kafka
+    networks:
+      - reflecta-microservices
+    env_file:
+      - envs/kafka.env
+    healthcheck:
+      test: [ "CMD", "kafka-topics.sh", "--bootstrap-server", "localhost:9092", "--list" ]
+      interval: 10s
+      timeout: 10s
+      retries: 5
+    restart: unless-stopped
+
+  postgres:
+    image: postgres:17.4
+    container_name: reflecta-psql
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - reflecta-microservices
+    restart: unless-stopped
+
+
+networks:
+  reflecta-microservices:
+    driver: bridge
+
+volumes:
+  redis-data:
+  postgres-data:
+  kafka-data:
