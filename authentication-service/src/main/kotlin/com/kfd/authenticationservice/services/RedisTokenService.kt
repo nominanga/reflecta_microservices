@@ -5,6 +5,7 @@ import com.kfd.authenticationservice.dtos.auth.responses.AuthResponse
 import org.springframework.data.redis.core.StringRedisTemplate
 import org.springframework.stereotype.Service
 import java.time.Duration
+import java.util.*
 
 @Service
 class RedisTokenService (
@@ -12,40 +13,50 @@ class RedisTokenService (
     private val redisTemplate: StringRedisTemplate,
     private val jwtGenerationService: JwtGenerationService,
 ) {
+
+    private data class RefreshTokenPayload (
+        val userId: Long,
+        val sessionId: String
+    )
+
     fun generateTokens(userId: Long): AuthResponse {
 
         val accessToken = jwtGenerationService.generateAccessToken(userId)
         val refreshToken = jwtGenerationService.generateRefreshToken(userId)
 
-        val value = mapOf(
-            "id" to userId,
-            "issuedAt" to System.currentTimeMillis() / 1000,
-            "expiresAt" to (System.currentTimeMillis()
-                    + jwtGenerationService.refreshTokenExpirationTime()) / 1000
+        val sessionId = UUID.randomUUID().toString()
+
+        val value = RefreshTokenPayload(
+            userId = userId,
+            sessionId = sessionId
         )
 
         redisTemplate.opsForValue().set(
-            refreshToken,
+            "refresh:$refreshToken",
             objectMapper.writeValueAsString(value),
             Duration.ofSeconds(jwtGenerationService.refreshTokenExpirationTime() / 1000)
         )
 
         return AuthResponse(
             accessToken,
-            refreshToken
+            refreshToken,
+            sessionId
         )
     }
 
     fun removeRefreshToken(refreshToken: String) {
-        redisTemplate.delete(refreshToken)
+        redisTemplate.delete("refresh:$refreshToken")
     }
 
-    fun refreshTokens(refreshToken: String): AuthResponse {
-        val stored = redisTemplate.opsForValue().get(refreshToken)
+    fun refreshTokens(refreshToken: String, sessionId: String): AuthResponse {
+        val stored = redisTemplate.opsForValue().get("refresh:$refreshToken")
             ?: throw Exception("Refresh token is expired or invalid")
 
-        val data = objectMapper.readValue(stored, Map::class.java)
-        val userId = data["id"] as Long
+        val data = objectMapper.readValue(stored, RefreshTokenPayload::class.java)
+        if (data.sessionId != sessionId) {
+            throw Exception("Wrong session id")
+        }
+        val userId = data.userId
 
         removeRefreshToken(refreshToken)
         return generateTokens(userId)
