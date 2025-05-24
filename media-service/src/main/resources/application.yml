@@ -1,0 +1,13 @@
+spring:
+  application:
+    name: media-service
+  config:
+    import: configserver:http://config:8888
+
+server:
+  port: 0
+
+eureka:
+  client:
+    service-url:
+      defaultZone: http://discovery:8761/eureka

@@ -42,15 +42,6 @@ class UserController(
         return ResponseEntity.ok(mapToUserDto(user))
     }
 
-    @PutMapping("/avatar")
-    fun updateAvatar(
-        @RequestHeader("X-User-Id") userId: String,
-        @RequestParam avatar: MultipartFile
-    ) : ResponseEntity<UserResponseDto> {
-        val user = userService.updateAvatar(userId.toLong(), avatar)
-        return ResponseEntity.ok(mapToUserDto(user))
-    }
-
     @DeleteMapping
     fun deleteUser(
         @RequestHeader("X-User-Id") userId: String

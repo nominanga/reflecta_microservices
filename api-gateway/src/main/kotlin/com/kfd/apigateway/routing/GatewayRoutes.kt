@@ -14,28 +14,32 @@ class GatewayRoutes(
     @Bean
     fun routes(builder: RouteLocatorBuilder): RouteLocator {
         return builder.routes()
-            .route("auth-service") {
+            .route("auth-logout") {
                 it.path("/api/auth/logout")
                     .filters { f -> f.filter(jwtAuthFilter) }
                     .uri("lb://authentication-service")
             }
-            .route("auth-service") {
+            .route("auth-general") {
                 it.path("/api/auth/**")
                     .uri("lb://authentication-service")
             }
-            .route("user-service") {
+            .route("media-upload-avatar") {
+                it.path("/api/me/avatar")
+                    .filters { f -> f.filters(jwtAuthFilter) }
+                    .uri("lb://media-service")
+            }
+            .route("user-api") {
                 it.path("/api/me/**")
                     .filters { f -> f.filter(jwtAuthFilter) }
                     .uri("lb://user-service")
             }
-            .route("note-service") {
+            .route("note-api") {
                 it.path("/api/notes/**")
                     .filters { f -> f.filter(jwtAuthFilter) }
                     .uri("lb://note-service")
             }
-            .route("media-service") {
-                it.path("/media/avatars/**")
-                    .filters { f -> f.filters(jwtAuthFilter) }
+            .route("media-public") {
+                it.path("/media/**")
                     .uri("lb://media-service")
             }
             .build()

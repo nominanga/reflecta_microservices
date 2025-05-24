@@ -58,6 +58,21 @@ services:
       discovery:
         condition: service_healthy
 
+  media-service:
+    container_name: reflecta-media
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        MODULE: media-service
+    networks:
+      - reflecta-microservices
+    volumes:
+      - /media-service/media:/media
+    depends_on:
+      discovery:
+        condition: service_healthy
+
   user-service:
     container_name: reflecta-user
     build:

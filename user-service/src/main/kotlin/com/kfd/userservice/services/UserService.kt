@@ -73,24 +73,9 @@ class UserService(
         return userRepository.save(user)
     }
 
-    fun updateAvatar(id: Long, file: MultipartFile): User {
-
-        // TODO create media-service where avatar upload would be handled
+    fun updateAvatar(id: Long, mediaUri: String): User {
         val user = getUser(id)
-
-        if (file.isEmpty) throw IllegalArgumentException("File is empty")
-        if (!file.contentType?.startsWith("image/")!!) throw IllegalArgumentException("Not an Image")
-
-        val uploadDir = Paths.get("uploads/avatars")
-        Files.createDirectories(uploadDir)
-
-        val extension = file.originalFilename?.substringAfterLast('.', "") ?: "jpg"
-        val filename = "$id.$extension"
-        val filePath = uploadDir.resolve(filename)
-
-        file.inputStream.use { input -> Files.copy(input, filePath, StandardCopyOption.REPLACE_EXISTING) }
-
-        user.avatar = "/media/avatars/$filename"
+        user.avatar = mediaUri
         return userRepository.save(user)
     }
 
