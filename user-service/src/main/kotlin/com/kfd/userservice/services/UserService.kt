@@ -5,6 +5,7 @@ import com.kfd.userservice.database.entities.User
 import com.kfd.userservice.database.entities.UserSettings
 import com.kfd.userservice.dto.requests.RegistrationRequestDto
 import com.kfd.userservice.dto.requests.UserUpdateDto
+import com.kfd.userservice.services.clients.AuthenticationClientService
 import jakarta.persistence.EntityNotFoundException
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder
 import org.springframework.security.crypto.password.PasswordEncoder
@@ -17,6 +18,7 @@ import java.nio.file.StandardCopyOption
 @Service
 class UserService(
     private val userRepository: UserRepository,
+    private val authenticationClientService: AuthenticationClientService
 ) {
     private val encoder: PasswordEncoder = BCryptPasswordEncoder(12)
 
@@ -44,7 +46,7 @@ class UserService(
 
     fun deleteUser(id: Long) {
         val user = getUser(id)
-        // TODO request to authentication-service to delete all user associated tokens
+        authenticationClientService.logoutAll(id.toString())
         userRepository.delete(user)
     }
 

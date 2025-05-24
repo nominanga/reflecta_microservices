@@ -12,7 +12,7 @@ import org.springframework.web.bind.annotation.*
 
 @RestController
 @RequestMapping("/api/auth")
-class AuthController(
+class AuthenticationController(
     private val authenticationService: AuthenticationService
 ) {
 
@@ -35,9 +35,9 @@ class AuthController(
     @PostMapping("/logout")
     fun logout(
         @RequestBody body: LogoutRequestDto,
-        @RequestHeader("X-User-Id", required = false) userId: String?
+        @RequestHeader("X-User-Id") userId: String
     ) : ResponseEntity<Void> {
-        authenticationService.logout(body.refreshToken, userId)
+        authenticationService.logout(body.sessionId, userId)
         return ResponseEntity.noContent().build()
     }
 
@@ -47,6 +47,14 @@ class AuthController(
     ) : ResponseEntity<AuthResponseDto> {
         val tokenPair = authenticationService.refresh(body.refreshToken, body.sessionId)
         return ResponseEntity.ok(tokenPair)
+    }
+
+    @PostMapping("/logout/all")
+    fun logoutAll(
+        @RequestHeader("X-User-Id") userId: String
+    ) : ResponseEntity<Void> {
+        authenticationService.logoutAll(userId)
+        return ResponseEntity.noContent().build()
     }
 
 }
