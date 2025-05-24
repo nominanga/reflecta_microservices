@@ -5,7 +5,7 @@ import jakarta.validation.constraints.NotBlank
 import jakarta.validation.constraints.Pattern
 import jakarta.validation.constraints.Size
 
-data class RegistrationRequest(
+data class RegistrationRequestDto(
     @field:NotBlank(message = "Username is required")
     val username: String,
 

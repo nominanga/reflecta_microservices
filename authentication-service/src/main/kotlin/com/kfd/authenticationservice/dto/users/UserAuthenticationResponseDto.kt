@@ -1,6 +1,6 @@
 package com.kfd.authenticationservice.dto.users
 
-data class UserAuthenticationResponse(
+data class UserAuthenticationResponseDto(
     val id: String,
     val hashedPassword: String
 )

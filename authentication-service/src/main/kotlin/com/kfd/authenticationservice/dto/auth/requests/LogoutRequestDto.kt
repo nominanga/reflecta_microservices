@@ -1,5 +1,5 @@
 package com.kfd.authenticationservice.dto.auth.requests
 
-data class LogoutRequest(
+data class LogoutRequestDto(
     val refreshToken: String
 )

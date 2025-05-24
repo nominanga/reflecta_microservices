@@ -3,7 +3,7 @@ package com.kfd.userservice.services
 import com.kfd.userservice.database.repositories.UserRepository
 import com.kfd.userservice.database.entities.User
 import com.kfd.userservice.database.entities.UserSettings
-import com.kfd.userservice.dto.requests.RegistrationRequest
+import com.kfd.userservice.dto.requests.RegistrationRequestDto
 import com.kfd.userservice.dto.requests.UserUpdateDto
 import jakarta.persistence.EntityNotFoundException
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder
@@ -20,7 +20,7 @@ class UserService(
 ) {
     private val encoder: PasswordEncoder = BCryptPasswordEncoder(12)
 
-    fun createUser(userCredentials: RegistrationRequest): User {
+    fun createUser(userCredentials: RegistrationRequestDto): User {
 
         val user = User(
             username = userCredentials.username,

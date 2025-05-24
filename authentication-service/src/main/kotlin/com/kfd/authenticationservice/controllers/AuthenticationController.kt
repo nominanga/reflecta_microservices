@@ -1,10 +1,10 @@
 package com.kfd.authenticationservice.controllers
 
-import com.kfd.authenticationservice.dto.auth.requests.LoginRequest
-import com.kfd.authenticationservice.dto.auth.requests.LogoutRequest
-import com.kfd.authenticationservice.dto.auth.requests.RefreshRequest
-import com.kfd.authenticationservice.dto.auth.requests.RegistrationRequest
-import com.kfd.authenticationservice.dto.auth.responses.AuthResponse
+import com.kfd.authenticationservice.dto.auth.requests.LoginRequestDto
+import com.kfd.authenticationservice.dto.auth.requests.LogoutRequestDto
+import com.kfd.authenticationservice.dto.auth.requests.RefreshRequestDto
+import com.kfd.authenticationservice.dto.auth.requests.RegistrationRequestDto
+import com.kfd.authenticationservice.dto.auth.responses.AuthResponseDto
 import com.kfd.authenticationservice.services.AuthenticationService
 import jakarta.validation.Valid
 import org.springframework.http.ResponseEntity
@@ -18,23 +18,23 @@ class AuthController(
 
     @PostMapping("/register")
     fun register(
-        @RequestBody @Valid requestBody: RegistrationRequest
-    ) : ResponseEntity<AuthResponse> {
+        @RequestBody @Valid requestBody: RegistrationRequestDto
+    ) : ResponseEntity<AuthResponseDto> {
         val tokenPair = authenticationService.register(requestBody)
         return ResponseEntity.ok(tokenPair)
     }
 
     @PostMapping("/login")
     fun login(
-        @RequestBody @Valid requestBody: LoginRequest
-    ) : ResponseEntity<AuthResponse> {
+        @RequestBody @Valid requestBody: LoginRequestDto
+    ) : ResponseEntity<AuthResponseDto> {
         val tokenPair = authenticationService.login(requestBody)
         return ResponseEntity.ok(tokenPair)
     }
 
     @PostMapping("/logout")
     fun logout(
-        @RequestBody body: LogoutRequest,
+        @RequestBody body: LogoutRequestDto,
         @RequestHeader("X-User-Id", required = false) userId: String?
     ) : ResponseEntity<Void> {
         authenticationService.logout(body.refreshToken, userId)
@@ -43,8 +43,8 @@ class AuthController(
 
     @PostMapping("/refresh")
     fun refreshAccessToken(
-        @RequestBody body: RefreshRequest
-    ) : ResponseEntity<AuthResponse> {
+        @RequestBody body: RefreshRequestDto
+    ) : ResponseEntity<AuthResponseDto> {
         val tokenPair = authenticationService.refresh(body.refreshToken, body.sessionId)
         return ResponseEntity.ok(tokenPair)
     }

@@ -1,8 +1,8 @@
 package com.kfd.authenticationservice.services
 
-import com.kfd.authenticationservice.dto.auth.requests.LoginRequest
-import com.kfd.authenticationservice.dto.auth.requests.RegistrationRequest
-import com.kfd.authenticationservice.dto.auth.responses.AuthResponse
+import com.kfd.authenticationservice.dto.auth.requests.LoginRequestDto
+import com.kfd.authenticationservice.dto.auth.requests.RegistrationRequestDto
+import com.kfd.authenticationservice.dto.auth.responses.AuthResponseDto
 import com.kfd.authenticationservice.exceptions.InvalidCredentialsException
 import com.kfd.authenticationservice.services.clients.UserServiceClient
 import feign.FeignException
@@ -18,7 +18,7 @@ class AuthenticationService(
 
     private val encoder: PasswordEncoder = BCryptPasswordEncoder(12)
 
-    fun register(request: RegistrationRequest): AuthResponse {
+    fun register(request: RegistrationRequestDto): AuthResponseDto {
         if (userServiceClient.existsUserByEmail(request.email)) {
             throw InvalidCredentialsException("User with email ${request.email} already exists")
         }
@@ -31,7 +31,7 @@ class AuthenticationService(
         return redisTokenService.generateTokens(userId)
     }
 
-    fun login(request: LoginRequest): AuthResponse {
+    fun login(request: LoginRequestDto): AuthResponseDto {
         val user = try {
             userServiceClient.getUserByEmail(request.email)
         } catch (e: FeignException.NotFound) {
@@ -45,7 +45,7 @@ class AuthenticationService(
         }
     }
 
-    fun refresh(refreshToken: String, sessionId: String): AuthResponse =
+    fun refresh(refreshToken: String, sessionId: String): AuthResponseDto =
         redisTokenService.refreshTokens(refreshToken, sessionId)
 
     fun logout(refreshToken: String, userId: String?) {

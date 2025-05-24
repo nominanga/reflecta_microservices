@@ -1,7 +1,7 @@
 package com.kfd.authenticationservice.services
 
 import com.fasterxml.jackson.databind.ObjectMapper
-import com.kfd.authenticationservice.dto.auth.responses.AuthResponse
+import com.kfd.authenticationservice.dto.auth.responses.AuthResponseDto
 import com.kfd.authenticationservice.exceptions.UnauthorizedException
 import org.springframework.data.redis.core.StringRedisTemplate
 import org.springframework.stereotype.Service
@@ -20,7 +20,7 @@ class RedisTokenService (
         val sessionId: String
     )
 
-    fun generateTokens(userId: String): AuthResponse {
+    fun generateTokens(userId: String): AuthResponseDto {
 
         val accessToken = jwtGenerationService.generateAccessToken(userId)
         val refreshToken = jwtGenerationService.generateRefreshToken(userId)
@@ -38,7 +38,7 @@ class RedisTokenService (
             Duration.ofSeconds(jwtGenerationService.refreshTokenExpirationTime() / 1000)
         )
 
-        return AuthResponse(
+        return AuthResponseDto(
             accessToken,
             refreshToken,
             sessionId
@@ -55,7 +55,7 @@ class RedisTokenService (
         redisTemplate.delete("refresh:$refreshToken")
     }
 
-    fun refreshTokens(refreshToken: String, sessionId: String): AuthResponse {
+    fun refreshTokens(refreshToken: String, sessionId: String): AuthResponseDto {
         val stored = redisTemplate.opsForValue().get("refresh:$refreshToken")
             ?: throw UnauthorizedException("Refresh token is expired or invalid")
 
