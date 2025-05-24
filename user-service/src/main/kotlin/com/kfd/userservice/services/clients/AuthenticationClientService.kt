@@ -6,7 +6,7 @@ import org.springframework.web.bind.annotation.RequestHeader
 
 @FeignClient(name = "authentication-service")
 interface AuthenticationClientService {
-    @PostMapping("/api/logout/all")
+    @PostMapping("/api/auth/logout/all")
     fun logoutAll(
         @RequestHeader("X-User-Id") userId: String
     ) : Unit

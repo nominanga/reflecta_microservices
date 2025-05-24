@@ -1,10 +1,13 @@
 package com.kfd.mediaservice.exceptions
 
+import jakarta.servlet.http.HttpServletRequest
 import org.slf4j.LoggerFactory
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
+import org.springframework.web.HttpRequestMethodNotSupportedException
 import org.springframework.web.bind.annotation.ExceptionHandler
 import org.springframework.web.bind.annotation.RestControllerAdvice
+import org.springframework.web.server.MethodNotAllowedException
 import java.time.Instant
 
 @RestControllerAdvice
@@ -25,6 +28,23 @@ class MediaExceptionHandler {
         return ResponseEntity.badRequest().body(body)
     }
 
+    @ExceptionHandler(HttpRequestMethodNotSupportedException::class)
+    fun handleHttpRequestMethodNotSupported(
+        ex: HttpRequestMethodNotSupportedException,
+        request: HttpServletRequest
+    ): ResponseEntity<Map<String, Any?>> {
+
+        val path = request.requestURI.toString()
+        val responseBody = mapOf(
+            "timestamp" to Instant.now(),
+            "status" to HttpStatus.METHOD_NOT_ALLOWED.value(),
+            "error" to "Method Not Allowed",
+            "message" to "Method ${ex.method} is not allowed on $path. " +
+                    "Allowed: ${ex.supportedHttpMethods?.joinToString()}"
+        )
+
+        return ResponseEntity.status(HttpStatus.METHOD_NOT_ALLOWED).body(responseBody)
+    }
 
     @ExceptionHandler(Exception::class)
     fun handleError(

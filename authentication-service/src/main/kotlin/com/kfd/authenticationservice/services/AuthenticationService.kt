@@ -3,6 +3,7 @@ package com.kfd.authenticationservice.services
 import com.kfd.authenticationservice.dto.auth.requests.LoginRequestDto
 import com.kfd.authenticationservice.dto.auth.requests.RegistrationRequestDto
 import com.kfd.authenticationservice.dto.auth.responses.AuthResponseDto
+import com.kfd.authenticationservice.exceptions.ConflictException
 import com.kfd.authenticationservice.exceptions.InvalidCredentialsException
 import com.kfd.authenticationservice.services.clients.UserServiceClient
 import feign.FeignException
@@ -20,7 +21,7 @@ class AuthenticationService(
 
     fun register(request: RegistrationRequestDto): AuthResponseDto {
         if (userServiceClient.existsUserByEmail(request.email)) {
-            throw InvalidCredentialsException("User with email ${request.email} already exists")
+            throw ConflictException("User with email ${request.email} already exists")
         }
         val hashedPassword: String = encoder.encode(request.password)
         request.password = hashedPassword

@@ -1,9 +1,11 @@
 package com.kfd.authenticationservice.exceptions
 
+import jakarta.servlet.http.HttpServletRequest
 import org.slf4j.LoggerFactory
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.http.converter.HttpMessageNotReadableException
+import org.springframework.web.HttpRequestMethodNotSupportedException
 import org.springframework.web.bind.MethodArgumentNotValidException
 import org.springframework.web.bind.annotation.ExceptionHandler
 import org.springframework.web.bind.annotation.RestControllerAdvice
@@ -27,6 +29,39 @@ class AuthenticationExceptionHandler {
         )
 
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(responseBody)
+    }
+
+    @ExceptionHandler(ConflictException::class)
+    fun handleConflict(
+        ex: ConflictException
+    ): ResponseEntity<Map<String, Any?>> {
+
+        val responseBody = mapOf(
+            "timestamp" to Instant.now(),
+            "status" to HttpStatus.CONFLICT.value(),
+            "error" to "Conflict",
+            "message" to ex.message
+        )
+
+        return ResponseEntity.status(HttpStatus.CONFLICT).body(responseBody)
+    }
+
+    @ExceptionHandler(HttpRequestMethodNotSupportedException::class)
+    fun handleHttpRequestMethodNotSupported(
+        ex: HttpRequestMethodNotSupportedException,
+        request: HttpServletRequest
+    ): ResponseEntity<Map<String, Any?>> {
+
+        val path = request.requestURI.toString()
+        val responseBody = mapOf(
+            "timestamp" to Instant.now(),
+            "status" to HttpStatus.METHOD_NOT_ALLOWED.value(),
+            "error" to "Method Not Allowed",
+            "message" to "Method ${ex.method} is not allowed on $path. " +
+                    "Allowed: ${ex.supportedHttpMethods?.joinToString()}"
+        )
+
+        return ResponseEntity.status(HttpStatus.METHOD_NOT_ALLOWED).body(responseBody)
     }
 
     @ExceptionHandler(InvalidCredentialsException::class)

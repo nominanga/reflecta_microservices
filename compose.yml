@@ -68,7 +68,7 @@ services:
     networks:
       - reflecta-microservices
     volumes:
-      - /media-service/media:/media
+      - ./media-service/media:/media
     depends_on:
       discovery:
         condition: service_healthy
@@ -164,6 +164,10 @@ services:
 networks:
   reflecta-microservices:
     driver: bridge
+    ipam:
+      config:
+        - subnet: 172.25.0.0/16
+
 
 volumes:
   redis-data:

@@ -30,7 +30,6 @@ class User (
     @UpdateTimestamp
     var updatedAt: LocalDateTime = LocalDateTime.now()
 
-    @Column(unique=true)
     var avatar: String = "/media/avatars/default.png"
 
     @OneToOne(mappedBy = "user", cascade = [(CascadeType.ALL)], orphanRemoval = true)
