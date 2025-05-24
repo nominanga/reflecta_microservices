@@ -1,18 +1,20 @@
-package com.kfd.authenticationservice.exceptions
+package com.kfd.userservice.exceptions
 
+import jakarta.persistence.EntityNotFoundException
 import org.slf4j.LoggerFactory
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.http.converter.HttpMessageNotReadableException
 import org.springframework.web.bind.MethodArgumentNotValidException
+import org.springframework.web.bind.MissingServletRequestParameterException
 import org.springframework.web.bind.annotation.ExceptionHandler
 import org.springframework.web.bind.annotation.RestControllerAdvice
 import java.time.Instant
 
 @RestControllerAdvice
-class AuthenticationExceptionHandler {
+class UserExceptionHandler {
 
-    private val logger = LoggerFactory.getLogger(AuthenticationExceptionHandler::class.java)
+    private val logger = LoggerFactory.getLogger(UserExceptionHandler::class.java)
 
     @ExceptionHandler(MethodArgumentNotValidException::class)
     fun handleValidation(ex: MethodArgumentNotValidException): ResponseEntity<Map<String, Any>> {
@@ -29,36 +31,6 @@ class AuthenticationExceptionHandler {
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(responseBody)
     }
 
-    @ExceptionHandler(InvalidCredentialsException::class)
-    fun handleInvalidCredentials(
-        ex: InvalidCredentialsException
-    ): ResponseEntity<Map<String, Any?>> {
-
-        val responseBody = mapOf(
-            "timestamp" to Instant.now(),
-            "status" to HttpStatus.UNAUTHORIZED.value(),
-            "error" to "Unauthorized",
-            "message" to ex.message
-        )
-
-        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(responseBody)
-    }
-
-    @ExceptionHandler(UnauthorizedException::class)
-    fun handleUnauthorized(
-        ex: UnauthorizedException
-    ): ResponseEntity<Map<String, Any?>> {
-
-        val responseBody = mapOf(
-            "timestamp" to Instant.now(),
-            "status" to HttpStatus.UNAUTHORIZED.value(),
-            "error" to "Unauthorized",
-            "message" to ex.message
-        )
-
-        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(responseBody)
-    }
-
     @ExceptionHandler(HttpMessageNotReadableException::class)
     fun handleUnreadable(ex: HttpMessageNotReadableException): ResponseEntity<Map<String, Any?>> {
         val body = mapOf(
@@ -66,6 +38,29 @@ class AuthenticationExceptionHandler {
             "status" to 400,
             "error" to "Bad Request",
             "message" to "Malformed or missing request body"
+        )
+        return ResponseEntity.badRequest().body(body)
+    }
+
+    @ExceptionHandler(EntityNotFoundException::class)
+    fun handleNotFound(ex: EntityNotFoundException): ResponseEntity<Map<String, Any?>> {
+        val body = mapOf(
+            "timestamp" to Instant.now(),
+            "status" to 400,
+            "error" to "Bad Request",
+            "message" to ex.message
+        )
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(body)
+    }
+
+
+    @ExceptionHandler(MissingServletRequestParameterException::class)
+    fun handleMissingParam(ex: MissingServletRequestParameterException): ResponseEntity<Map<String, Any?>> {
+        val body = mapOf(
+            "timestamp" to Instant.now(),
+            "status" to 400,
+            "error" to "Bad Request",
+            "message" to "Missing query parameter: ${ex.parameterName}"
         )
         return ResponseEntity.badRequest().body(body)
     }

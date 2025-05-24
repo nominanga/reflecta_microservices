@@ -33,6 +33,11 @@ class GatewayRoutes(
                     .filters { f -> f.filter(jwtAuthFilter) }
                     .uri("lb://note-service")
             }
+            .route("media-service") {
+                it.path("/media/avatars/**")
+                    .filters { f -> f.filters(jwtAuthFilter) }
+                    .uri("lb://media-service")
+            }
             .build()
     }
 }

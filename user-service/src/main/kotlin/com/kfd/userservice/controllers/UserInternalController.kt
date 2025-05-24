@@ -1,0 +1,43 @@
+package com.kfd.userservice.controllers
+
+import com.kfd.userservice.database.entities.User
+import com.kfd.userservice.dto.requests.RegistrationRequest
+import com.kfd.userservice.dto.responses.UserAuthenticationResponse
+import com.kfd.userservice.services.UserService
+import org.springframework.http.ResponseEntity
+import org.springframework.web.bind.annotation.*
+
+@RestController
+@RequestMapping("/internal/user")
+class UserInternalController(
+    private val userService: UserService
+) {
+
+    fun mapUserToResponse(user: User) : UserAuthenticationResponse {
+        return UserAuthenticationResponse(
+            id = user.id.toString(),
+            hashedPassword = user.password,
+        )
+    }
+
+    @PostMapping
+    fun createUser(
+        @RequestBody body: RegistrationRequest
+    ): ResponseEntity<UserAuthenticationResponse> {
+        return ResponseEntity.ok(mapUserToResponse(userService.createUser(body)))
+    }
+
+    @GetMapping("/email")
+    fun getUserByEmail(
+        @RequestParam(value = "email") email: String,
+    ) : ResponseEntity<UserAuthenticationResponse> {
+        return ResponseEntity.ok(mapUserToResponse(userService.getUserByEmail(email)))
+    }
+
+    @GetMapping("/email/exists")
+    fun existsUserByEmail(
+        @RequestParam(value = "email") email: String,
+    ) : ResponseEntity<Boolean> {
+        return ResponseEntity.ok(userService.existsUserByEmail(email))
+    }
+}
