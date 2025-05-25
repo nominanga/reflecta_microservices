@@ -1,0 +1,16 @@
+spring:
+  application:
+    name: ai-service
+  config:
+    import: configserver:http://config:8888
+
+server:
+  port: 0
+
+eureka:
+  client:
+    service-url:
+      defaultZone: http://discovery:8761/eureka
+
+deepseek:
+  api-key: ${DEEPSEEK_API_KEY}
