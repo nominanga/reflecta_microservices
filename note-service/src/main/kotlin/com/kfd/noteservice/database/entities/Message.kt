@@ -1,22 +1,24 @@
-package com.kfd.userservice.database.entities
+package com.kfd.noteservice.database.entities
 
+import com.kfd.noteservice.enums.MessageSender
 import jakarta.persistence.*
 import org.hibernate.annotations.CreationTimestamp
 import org.hibernate.annotations.UpdateTimestamp
 import java.time.LocalDateTime
 
 @Entity
-@Table(name = "`users`")
-class User (
+@Table(name = "messages")
+class Message(
+    @Column(nullable = false)
+    var text: String,
 
     @Column(nullable = false)
-    var username: String,
+    @Enumerated(EnumType.STRING)
+    val sender: MessageSender = MessageSender.AI,
 
-    @Column(unique=true, nullable = false)
-    val email: String,
-
-    @Column(nullable = false)
-    var password: String,
+    @ManyToOne(optional = false)
+    @JoinColumn(name = "thread_id")
+    val noteThread: NoteThread,
 ) {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -29,11 +31,4 @@ class User (
     @Column(name="updated_at")
     @UpdateTimestamp
     var updatedAt: LocalDateTime = LocalDateTime.now()
-
-    // TODO return times of user creation and update
-
-    var avatar: String = "/media/avatars/default.png"
-
-    @OneToOne(mappedBy = "user", cascade = [(CascadeType.ALL)], orphanRemoval = true)
-    var userSettings: UserSettings? = null
 }
