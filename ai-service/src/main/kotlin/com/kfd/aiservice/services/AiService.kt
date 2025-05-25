@@ -49,13 +49,13 @@ class AiService(
         val chatRequest = ChatRequest(
             model = aiModel,
             messages = listOf(AiMessageDto(
-                content = content,
+                content = "Придумай название для этой заметки длиной не более 30 символов.\n$content",
                 role = "user"
             )),
             stream = false
         )
 
-        return getChatResponse(chatRequest)?.choices?.firstOrNull()?.message?.content
+        return getChatResponse(chatRequest)?.choices?.firstOrNull()?.message?.content?.take(30)
             ?: throw IllegalStateException("No AI response from assistant")
 
     }

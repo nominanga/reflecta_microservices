@@ -9,11 +9,12 @@ import com.kfd.noteservice.dto.note.NoteRequestDto
 import com.kfd.noteservice.dto.note.NoteResponseDto
 import com.kfd.noteservice.services.MessageService
 import com.kfd.noteservice.services.NoteService
+import jakarta.validation.Valid
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*
 
 @RestController
-@RequestMapping("/notes")
+@RequestMapping("/api/notes")
 class NoteController(
     private val noteService: NoteService,
     private val messageService: MessageService
@@ -62,7 +63,7 @@ class NoteController(
     @PostMapping("/create")
     fun createNote(
         @RequestHeader("X-User-Id") userId: String,
-        @RequestBody body: NoteRequestDto
+        @RequestBody @Valid body: NoteRequestDto
     ) : ResponseEntity<NoteDetailedResponseDto> {
         val note = noteService.createNote(userId.toLong(), body)
         return ResponseEntity.ok(mapNoteToDetailedDto(note))
@@ -81,7 +82,7 @@ class NoteController(
     fun updateNote(
         @PathVariable("id") id: Long,
         @RequestHeader("X-User-Id") userId: String,
-        @RequestBody body: NoteRequestDto
+        @RequestBody @Valid body: NoteRequestDto
     ) : ResponseEntity<NoteDetailedResponseDto> {
         val note = noteService.updateNote(id, userId.toLong(), body)
         return ResponseEntity.ok(mapNoteToDetailedDto(note))

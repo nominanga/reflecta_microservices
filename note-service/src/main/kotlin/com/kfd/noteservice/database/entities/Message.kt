@@ -9,7 +9,7 @@ import java.time.LocalDateTime
 @Entity
 @Table(name = "messages")
 class Message(
-    @Column(nullable = false)
+    @Column(nullable = false, columnDefinition = "TEXT")
     var text: String,
 
     @Column(nullable = false)

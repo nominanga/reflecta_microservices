@@ -65,10 +65,6 @@ class NoteService (
 
     @Transactional
     fun createNote(userId: Long, noteRequestDto: NoteRequestDto) : Note {
-        if (noteRequestDto.body.isNullOrBlank()) {
-            throw IllegalArgumentException("Note can not be empty")
-        }
-
         val note = Note(
             userId = userId,
             title = if (!noteRequestDto.title.isNullOrBlank()) noteRequestDto.title
@@ -108,10 +104,6 @@ class NoteService (
 
     @Transactional
     fun updateNote(noteId: Long, userId: Long, noteRequestDto: NoteRequestDto) : Note {
-        if (noteRequestDto.body.isNullOrBlank()) {
-            throw IllegalArgumentException("Note can not be empty")
-        }
-
         val note = getNote(noteId, userId)
 
         note.title = if (!noteRequestDto.title.isNullOrBlank()) noteRequestDto.title

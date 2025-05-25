@@ -11,7 +11,7 @@ class Note(
     @Column
     var title: String?,
 
-    @Column
+    @Column(columnDefinition = "TEXT")
     var body: String,
 
     @Column(name = "user_id")

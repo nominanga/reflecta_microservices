@@ -153,24 +153,6 @@ services:
     networks:
       - reflecta-microservices
 
-#  kafka:
-#    image: bitnami/kafka:3.6.1
-#    container_name: reflecta-kafka
-#    ports:
-#      - "9092:9092"
-#    volumes:
-#      - kafka-data:/bitnami/kafka
-#    networks:
-#      - reflecta-microservices
-#    env_file:
-#      - envs/kafka.env
-#    healthcheck:
-#      test: [ "CMD", "kafka-topics.sh", "--bootstrap-server", "localhost:9092", "--list" ]
-#      interval: 10s
-#      timeout: 10s
-#      retries: 5
-#    restart: unless-stopped
-
   postgres:
     image: postgres:17.4
     container_name: reflecta-psql
@@ -195,9 +177,6 @@ services:
 networks:
   reflecta-microservices:
     driver: bridge
-    ipam:
-      config:
-        - subnet: 172.25.0.0/16
 
 
 volumes:
