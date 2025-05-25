@@ -4,14 +4,3 @@ spring:
   config:
     import: configserver:http://config:8888
 
-server:
-  port: 0
-
-eureka:
-  client:
-    service-url:
-      defaultZone: http://discovery:8761/eureka
-
-ai:
-  api-key: ${DEEPSEEK_API_KEY}
-  model: "deepseek-chat"
