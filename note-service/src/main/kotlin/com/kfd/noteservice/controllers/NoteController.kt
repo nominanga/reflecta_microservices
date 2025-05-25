@@ -71,7 +71,7 @@ class NoteController(
         return ResponseEntity.ok(mapNoteToDetailedDto(note))
     }
 
-    @PutMapping("/{id}/set-favorite")
+    @PutMapping("/{id:\\d+}/set-favorite")
     fun noteSetFavorite(
         @PathVariable("id") id: Long,
         @RequestHeader("X-User-Id") userId: String,
@@ -80,7 +80,7 @@ class NoteController(
         return ResponseEntity.ok().build()
     }
 
-    @PutMapping("/{id}")
+    @PutMapping("/{id:\\d+}")
     fun updateNote(
         @PathVariable("id") id: Long,
         @RequestHeader("X-User-Id") userId: String,
@@ -90,7 +90,7 @@ class NoteController(
         return ResponseEntity.ok(mapNoteToDetailedDto(note))
     }
 
-    @GetMapping("/{id}")
+    @GetMapping("/{id:\\d+}")
     fun getNote(
         @PathVariable("id") id: Long,
         @RequestHeader("X-User-Id") userId: String,
@@ -99,7 +99,7 @@ class NoteController(
         return ResponseEntity.ok(mapNoteToDetailedDto(note))
     }
 
-    @DeleteMapping("/{id}")
+    @DeleteMapping("/{id:\\d+}")
     fun deleteNote(
         @PathVariable("id") id: Long,
         @RequestHeader("X-User-Id") userId: String,
@@ -108,7 +108,7 @@ class NoteController(
         return ResponseEntity.noContent().build()
     }
 
-    @PostMapping("/{id}/send-message")
+    @PostMapping("/{id:\\d+}/send-message")
     fun sendMessage(
         @PathVariable("id") id: Long,
         @RequestHeader("X-User-Id") userId: String,

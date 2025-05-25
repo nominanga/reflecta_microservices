@@ -98,6 +98,7 @@ class NoteExceptionHandler {
 
     @ExceptionHandler(FeignException::class)
     fun handleFeignException(ex: FeignException): ResponseEntity<Map<String, Any?>> {
+        logger.error("Exception occurred: ${ex.message}", ex)
         val body = mapOf(
             "timestamp" to Instant.now(),
             "status" to HttpStatus.INTERNAL_SERVER_ERROR.value(),
