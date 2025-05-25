@@ -1,30 +1,40 @@
 package com.kfd.noteservice.services
 
+import com.kfd.noteservice.database.entities.Message
 import com.kfd.noteservice.database.entities.Note
 import com.kfd.noteservice.database.entities.NoteThread
 import com.kfd.noteservice.database.repositories.NoteRepository
 import com.kfd.noteservice.dto.note.NoteRequestDto
+import com.kfd.noteservice.enums.MessageSender
 import jakarta.persistence.EntityNotFoundException
 import jakarta.ws.rs.ForbiddenException
 import org.springframework.stereotype.Service
 
 @Service
 class NoteService (
-    private val repository: NoteRepository
+    private val repository: NoteRepository,
+    private val messageService: MessageService
 ){
 
-    private fun processNote(note: Note) : Note {
-        // TODO generate title for note with deepseek
+    private fun createAiMessage(userId: Long, note: Note, previousMessages: List<Message>): Message {
+        val aiResponse = "some response"
+        return messageService.createMessage(note.noteThread!!, aiResponse, MessageSender.AI)
+    }
 
-        val noteThread = NoteThread(
-            note = note
-        )
+    private fun generateTitle(body: String) : String {
+        return "some response"
+    }
 
-        note.noteThread = noteThread
+    fun createUserMessage(noteId: Long, userId: Long, text: String?) : Message {
+        val note = getNote(noteId, userId)
+        if (text.isNullOrBlank()) {
+            throw IllegalArgumentException("Message can not be empty")
+        }
+        messageService.createMessage(note.noteThread!!, text, MessageSender.USER)
 
-        // TODO send to deepseek new created note
+        val messages = messageService.getMessages(note.noteThread!!)
 
-        return note
+        return createAiMessage(userId, note, messages)
     }
 
     fun createNote(userId: Long, noteRequestDto: NoteRequestDto) : Note {
@@ -34,13 +44,21 @@ class NoteService (
 
         val note = Note(
             userId = userId,
-            title = noteRequestDto.title,
+            title = if (!noteRequestDto.title.isNullOrBlank()) noteRequestDto.title
+            else generateTitle(noteRequestDto.body),
             body = noteRequestDto.body
         )
 
-        val processedNote = processNote(note)
+        val noteThread = NoteThread(
+            note = note
+        )
+        note.noteThread = noteThread
 
-        return repository.save(processedNote)
+        // TODO send to deepseek new created note
+        val messages = messageService.getMessages(note.noteThread!!)
+        createAiMessage(userId, note, messages)
+
+        return repository.save(note)
     }
 
     fun getNote(noteId: Long, userId: Long) : Note {
@@ -66,13 +84,22 @@ class NoteService (
         if (noteRequestDto.body.isNullOrBlank()) {
             throw IllegalArgumentException("Note can not be empty")
         }
+
         val note = getNote(noteId, userId)
-        note.title = noteRequestDto.title
-        note.body = noteRequestDto.body
+        note.title = if (!noteRequestDto.title.isNullOrBlank()) noteRequestDto.title
+        else generateTitle(noteRequestDto.body)
+        note.body = noteRequestDto.title ?: generateTitle(noteRequestDto.body)
 
-        val processedNote = processNote(note)
+        val noteThread = NoteThread(
+            note = note
+        )
+        note.noteThread = noteThread
 
-        return repository.save(processedNote)
+        // TODO send to deepseek new created note
+        val messages = messageService.getMessages(note.noteThread!!)
+        createAiMessage(userId, note, messages)
+
+        return repository.save(note)
     }
 
     fun deleteNote(noteId: Long, userId: Long) {

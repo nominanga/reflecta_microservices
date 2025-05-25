@@ -1,7 +1,10 @@
 package com.kfd.noteservice.controllers
 
+import com.kfd.noteservice.database.entities.Message
 import com.kfd.noteservice.database.entities.Note
 import com.kfd.noteservice.dto.message.MessageRequestDto
+import com.kfd.noteservice.dto.message.MessageResponseDto
+import com.kfd.noteservice.dto.note.NoteDetailedResponseDto
 import com.kfd.noteservice.dto.note.NoteRequestDto
 import com.kfd.noteservice.dto.note.NoteResponseDto
 import com.kfd.noteservice.services.MessageService
@@ -18,9 +21,26 @@ class NoteController(
 
     private fun Note.toResponseDto(): NoteResponseDto = NoteResponseDto(
         title = this.title,
-        body = this.body
+        body = this.body,
+        favorite = this.favorite
     )
     private fun List<Note>.toResponseDtoList(): List<NoteResponseDto> = this.map { it.toResponseDto() }
+
+    private fun Message.toResponseDto(): MessageResponseDto = MessageResponseDto(
+        text = this.text,
+        sender = this.sender,
+    )
+
+    private fun mapNoteToDetailedDto(note: Note) : NoteDetailedResponseDto {
+        val messages = messageService.getMessages(note.noteThread!!)
+        return NoteDetailedResponseDto(
+            title = note.title,
+            body = note.body,
+            favorite = note.favorite,
+            createdAt = note.createdAt,
+            messages = messages.map { it.toResponseDto() }
+        )
+    }
 
 
     @GetMapping
@@ -43,8 +63,18 @@ class NoteController(
     fun createNote(
         @RequestHeader("X-User-Id") userId: String,
         @RequestBody body: NoteRequestDto
-    ) {
+    ) : ResponseEntity<NoteDetailedResponseDto> {
+        val note = noteService.createNote(userId.toLong(), body)
+        return ResponseEntity.ok(mapNoteToDetailedDto(note))
+    }
 
+    @PutMapping("/{id}/set-favorite")
+    fun noteSetFavorite(
+        @PathVariable("id") id: Long,
+        @RequestHeader("X-User-Id") userId: String,
+    ) : ResponseEntity<Void> {
+        noteService.noteSetFavorite(id, userId.toLong())
+        return ResponseEntity.ok().build()
     }
 
     @PutMapping("/{id}")
@@ -52,16 +82,18 @@ class NoteController(
         @PathVariable("id") id: Long,
         @RequestHeader("X-User-Id") userId: String,
         @RequestBody body: NoteRequestDto
-    ) {
-
+    ) : ResponseEntity<NoteDetailedResponseDto> {
+        val note = noteService.updateNote(id, userId.toLong(), body)
+        return ResponseEntity.ok(mapNoteToDetailedDto(note))
     }
 
     @GetMapping("/{id}")
     fun getNote(
         @PathVariable("id") id: Long,
         @RequestHeader("X-User-Id") userId: String,
-    ) {
-
+    ) : ResponseEntity<NoteDetailedResponseDto>  {
+        val note = noteService.getNote(id, userId.toLong())
+        return ResponseEntity.ok(mapNoteToDetailedDto(note))
     }
 
     @DeleteMapping("/{id}")
@@ -73,12 +105,13 @@ class NoteController(
         return ResponseEntity.noContent().build()
     }
 
-    @PostMapping("/{id}/message/create")
+    @PostMapping("/{id}/send-message")
     fun sendMessage(
         @PathVariable("id") id: Long,
         @RequestHeader("X-User-Id") userId: String,
         @RequestBody body: MessageRequestDto
-    ) {
-
+    ) : ResponseEntity<MessageResponseDto> {
+        val message = noteService.createUserMessage(id, userId.toLong(), body.text)
+        return ResponseEntity.ok(message.toResponseDto())
     }
 }
