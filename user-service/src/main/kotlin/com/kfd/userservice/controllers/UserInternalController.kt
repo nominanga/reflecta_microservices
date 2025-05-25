@@ -49,4 +49,12 @@ class UserInternalController(
         userService.updateAvatar(body.userId.toLong(), body.uri)
         return ResponseEntity.noContent().build()
     }
+
+    @GetMapping("/{id}/username")
+    fun getUsername(
+        @PathVariable("id") id: Long
+    ) : ResponseEntity<String> {
+        val user = userService.getUser(id)
+        return ResponseEntity.ok(user.username)
+    }
 }

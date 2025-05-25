@@ -5,23 +5,21 @@ import com.kfd.userservice.database.entities.User
 import com.kfd.userservice.database.entities.UserSettings
 import com.kfd.userservice.dto.requests.RegistrationRequestDto
 import com.kfd.userservice.dto.requests.UserUpdateDto
-import com.kfd.userservice.services.clients.AuthenticationClientService
+import com.kfd.userservice.services.clients.AuthenticationServiceClient
 import jakarta.persistence.EntityNotFoundException
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder
 import org.springframework.security.crypto.password.PasswordEncoder
 import org.springframework.stereotype.Service
-import org.springframework.web.multipart.MultipartFile
-import java.nio.file.Files
-import java.nio.file.Paths
-import java.nio.file.StandardCopyOption
+import org.springframework.transaction.annotation.Transactional
 
 @Service
 class UserService(
     private val userRepository: UserRepository,
-    private val authenticationClientService: AuthenticationClientService
+    private val authenticationServiceClient: AuthenticationServiceClient
 ) {
     private val encoder: PasswordEncoder = BCryptPasswordEncoder(12)
 
+    @Transactional
     fun createUser(userCredentials: RegistrationRequestDto): User {
 
         val user = User(
@@ -44,9 +42,10 @@ class UserService(
         return user
     }
 
+    @Transactional
     fun deleteUser(id: Long) {
         val user = getUser(id)
-        authenticationClientService.logoutAll(id.toString())
+        authenticationServiceClient.logoutAll(id.toString())
         userRepository.delete(user)
     }
 
@@ -58,6 +57,7 @@ class UserService(
         return user
     }
 
+    @Transactional
     fun updateUser(id: Long, userData: UserUpdateDto): User {
         val user = getUser(id)
         userData.username?.let { user.username = it }
@@ -73,6 +73,7 @@ class UserService(
         return userRepository.save(user)
     }
 
+    @Transactional
     fun updateAvatar(id: Long, mediaUri: String): User {
         val user = getUser(id)
         user.avatar = mediaUri

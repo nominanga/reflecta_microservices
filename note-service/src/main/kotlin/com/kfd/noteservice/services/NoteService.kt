@@ -4,27 +4,53 @@ import com.kfd.noteservice.database.entities.Message
 import com.kfd.noteservice.database.entities.Note
 import com.kfd.noteservice.database.entities.NoteThread
 import com.kfd.noteservice.database.repositories.NoteRepository
+import com.kfd.noteservice.dto.ai.AiMessageDto
+import com.kfd.noteservice.dto.ai.AiRequestDto
 import com.kfd.noteservice.dto.note.NoteRequestDto
 import com.kfd.noteservice.enums.MessageSender
+import com.kfd.noteservice.services.clients.AiServiceClient
+import com.kfd.noteservice.services.clients.UserServiceClient
 import jakarta.persistence.EntityNotFoundException
 import jakarta.ws.rs.ForbiddenException
 import org.springframework.stereotype.Service
+import org.springframework.transaction.annotation.Transactional
 
 @Service
 class NoteService (
     private val repository: NoteRepository,
+    private val userServiceClient: UserServiceClient,
+    private val aiServiceClient: AiServiceClient,
     private val messageService: MessageService
 ){
 
+    private fun Message.toAiMessageDto(): AiMessageDto = AiMessageDto(
+        text = this.text,
+        sender = when (this.sender) {
+            MessageSender.AI -> "assistant"
+            MessageSender.USER -> "user"
+        }
+    )
+
     private fun createAiMessage(userId: Long, note: Note, previousMessages: List<Message>): Message {
-        val aiResponse = "some response"
+        val username = userServiceClient.getUserName(userId)
+        val noteAiMessage = AiMessageDto(
+            text = note.body,
+            sender = "user"
+        )
+        val aiRequestDto = AiRequestDto(
+            username = username,
+            messages = listOf(noteAiMessage) + previousMessages.map { it.toAiMessageDto() }
+        )
+
+        val aiResponse = aiServiceClient.getAiResponse(aiRequestDto)
         return messageService.createMessage(note.noteThread!!, aiResponse, MessageSender.AI)
     }
 
     private fun generateTitle(body: String) : String {
-        return "some response"
+        return aiServiceClient.generateTitle(body)
     }
 
+    @Transactional
     fun createUserMessage(noteId: Long, userId: Long, text: String?) : Message {
         val note = getNote(noteId, userId)
         if (text.isNullOrBlank()) {
@@ -37,6 +63,7 @@ class NoteService (
         return createAiMessage(userId, note, messages)
     }
 
+    @Transactional
     fun createNote(userId: Long, noteRequestDto: NoteRequestDto) : Note {
         if (noteRequestDto.body.isNullOrBlank()) {
             throw IllegalArgumentException("Note can not be empty")
@@ -49,16 +76,15 @@ class NoteService (
             body = noteRequestDto.body
         )
 
-        val noteThread = NoteThread(
-            note = note
-        )
+        val noteThread = NoteThread(note)
         note.noteThread = noteThread
 
-        // TODO send to deepseek new created note
-        val messages = messageService.getMessages(note.noteThread!!)
-        createAiMessage(userId, note, messages)
+        val savedNote = repository.save(note)
+        val messages = messageService.getMessages(savedNote.noteThread!!)
+        createAiMessage(userId, savedNote, messages)
 
-        return repository.save(note)
+        return savedNote
+
     }
 
     fun getNote(noteId: Long, userId: Long) : Note {
@@ -80,33 +106,36 @@ class NoteService (
         return repository.findAllByUserIdAndFavoriteTrueOrderByCreatedAtDesc(userId)
     }
 
+    @Transactional
     fun updateNote(noteId: Long, userId: Long, noteRequestDto: NoteRequestDto) : Note {
         if (noteRequestDto.body.isNullOrBlank()) {
             throw IllegalArgumentException("Note can not be empty")
         }
 
         val note = getNote(noteId, userId)
+
         note.title = if (!noteRequestDto.title.isNullOrBlank()) noteRequestDto.title
         else generateTitle(noteRequestDto.body)
-        note.body = noteRequestDto.title ?: generateTitle(noteRequestDto.body)
 
-        val noteThread = NoteThread(
-            note = note
-        )
+        note.body = noteRequestDto.body
+
+        val noteThread = NoteThread(note)
         note.noteThread = noteThread
 
-        // TODO send to deepseek new created note
-        val messages = messageService.getMessages(note.noteThread!!)
-        createAiMessage(userId, note, messages)
+        val savedNote = repository.save(note)
+        val messages = messageService.getMessages(savedNote.noteThread!!)
+        createAiMessage(userId, savedNote, messages)
 
-        return repository.save(note)
+        return savedNote
     }
 
+    @Transactional
     fun deleteNote(noteId: Long, userId: Long) {
         val note = getNote(noteId, userId)
         repository.delete(note)
     }
 
+    @Transactional
     fun noteSetFavorite(noteId: Long, userId: Long) {
         val note = getNote(noteId, userId)
         note.favorite = !note.favorite

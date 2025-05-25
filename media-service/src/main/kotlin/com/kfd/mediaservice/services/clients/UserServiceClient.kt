@@ -6,7 +6,7 @@ import org.springframework.web.bind.annotation.PutMapping
 import org.springframework.web.bind.annotation.RequestBody
 
 @FeignClient(name = "user-service")
-interface UserClientService {
+interface UserServiceClient {
     @PutMapping("/internal/user/update/avatar")
     fun updateAvatar(
         @RequestBody body: UserAvatarUpdateDto

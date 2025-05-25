@@ -1,7 +1,7 @@
 package com.kfd.mediaservice.services
 
 import com.kfd.mediaservice.dto.UserAvatarUpdateDto
-import com.kfd.mediaservice.services.clients.UserClientService
+import com.kfd.mediaservice.services.clients.UserServiceClient
 import org.springframework.stereotype.Service
 import org.springframework.web.multipart.MultipartFile
 import java.nio.file.Files
@@ -10,7 +10,7 @@ import java.nio.file.StandardCopyOption
 
 @Service
 class MediaService(
-    private val userClientService: UserClientService
+    private val userServiceClient: UserServiceClient
 ) {
     fun uploadAvatar(file: MultipartFile, userId: String) : String {
         if (file.isEmpty) throw IllegalArgumentException("File can not be empty")
@@ -31,7 +31,7 @@ class MediaService(
         file.inputStream.use { input -> Files.copy(input, filePath, StandardCopyOption.REPLACE_EXISTING) }
 
         val uri =  "/media/avatars/$filename"
-        userClientService.updateAvatar(UserAvatarUpdateDto(
+        userServiceClient.updateAvatar(UserAvatarUpdateDto(
             userId = userId,
             uri = uri
         ))
