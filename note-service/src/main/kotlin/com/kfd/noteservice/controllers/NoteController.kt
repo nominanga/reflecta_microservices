@@ -21,6 +21,7 @@ class NoteController(
 ) {
 
     private fun Note.toResponseDto(): NoteResponseDto = NoteResponseDto(
+        id = this.id,
         title = this.title,
         body = this.body,
         favorite = this.favorite
@@ -35,6 +36,7 @@ class NoteController(
     private fun mapNoteToDetailedDto(note: Note) : NoteDetailedResponseDto {
         val messages = messageService.getMessages(note.noteThread!!)
         return NoteDetailedResponseDto(
+            id = note.id,
             title = note.title,
             body = note.body,
             favorite = note.favorite,
