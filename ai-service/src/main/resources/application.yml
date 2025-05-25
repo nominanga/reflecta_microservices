@@ -12,5 +12,5 @@ eureka:
     service-url:
       defaultZone: http://discovery:8761/eureka
 
-deepseek:
+ai:
   api-key: ${DEEPSEEK_API_KEY}
