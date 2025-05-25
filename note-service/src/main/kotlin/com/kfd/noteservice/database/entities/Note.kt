@@ -29,8 +29,8 @@ class Note(
     @UpdateTimestamp
     var updatedAt: LocalDateTime = LocalDateTime.now()
 
-    @Column(name = "is_favorite")
-    var isFavorite: Boolean = false
+    @Column(name = "favorite")
+    var favorite: Boolean = false
 
     @OneToOne(mappedBy = "note", cascade = [CascadeType.ALL], orphanRemoval = true)
     var noteThread: NoteThread? = null
