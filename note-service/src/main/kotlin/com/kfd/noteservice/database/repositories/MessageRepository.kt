@@ -6,4 +6,5 @@ import org.springframework.data.repository.CrudRepository
 
 interface MessageRepository : CrudRepository<Message, Long> {
     fun findAllByNoteThreadOrderByCreatedAtDesc(noteThread: NoteThread): List<Message>
+    fun deleteAllByNoteThread(noteThread: NoteThread)
 }

@@ -22,4 +22,8 @@ class MessageService(
         return messageRepository.findAllByNoteThreadOrderByCreatedAtDesc(noteThread)
     }
 
+    fun deleteMessages(noteThread: NoteThread) {
+        messageRepository.deleteAllByNoteThread(noteThread)
+    }
+
 }

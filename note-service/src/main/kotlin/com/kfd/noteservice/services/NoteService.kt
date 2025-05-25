@@ -95,11 +95,11 @@ class NoteService (
     }
 
     fun getAllUserNotes(userId: Long): List<Note> {
-        return repository.findAllByUserIdOrderByCreatedAtDesc(userId)
+        return repository.findAllByUserIdOrderByUpdatedAtDesc(userId)
     }
 
     fun getUserFavoriteNotes(userId: Long): List<Note> {
-        return repository.findAllByUserIdAndFavoriteTrueOrderByCreatedAtDesc(userId)
+        return repository.findAllByUserIdAndFavoriteTrueOrderByUpdatedAtDesc(userId)
     }
 
     @Transactional
@@ -108,11 +108,9 @@ class NoteService (
 
         note.title = if (!noteRequestDto.title.isNullOrBlank()) noteRequestDto.title
         else generateTitle(noteRequestDto.body)
-
         note.body = noteRequestDto.body
 
-        val noteThread = NoteThread(note)
-        note.noteThread = noteThread
+        messageService.deleteMessages(note.noteThread!!)
 
         val savedNote = repository.save(note)
         val messages = messageService.getMessages(savedNote.noteThread!!)
