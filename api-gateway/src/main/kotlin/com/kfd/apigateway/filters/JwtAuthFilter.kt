@@ -59,7 +59,9 @@ class JwtAuthFilter(
                     .build()
 
                 val mutatedExchange = exchange.mutate().request(mutatedRequest).build()
-                chain.filter(mutatedExchange)
+                chain.filter(mutatedExchange).doOnTerminate {
+                    logger.info("JwtAuthFilter finished processing, user id header is {}", userId)
+                }
             }
 
         } catch (e: ExpiredJwtException) {

@@ -4,9 +4,12 @@ import com.kfd.aiservice.chat.ChatRequest
 import com.kfd.aiservice.chat.ChatResponse
 import com.kfd.aiservice.dto.AiMessageDto
 import com.kfd.aiservice.dto.AiRequestDto
+import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Service
 import org.springframework.web.reactive.function.client.WebClient
+import reactor.core.publisher.Mono
+import java.time.Duration
 
 @Service
 class AiService(
@@ -14,6 +17,9 @@ class AiService(
     @Value("\${ai.model}") private val aiModel: String,
     private val webClientBuilder: WebClient.Builder
 ) {
+
+    private val logger = LoggerFactory.getLogger(AiService::class.java)
+
     private val webClient = webClientBuilder
         .baseUrl("https://api.deepseek.com")
         .defaultHeader("Content-Type", "application/json")
@@ -31,17 +37,28 @@ class AiService(
     }
 
     private fun getChatResponse(chatRequest: ChatRequest) : ChatResponse? {
-        return webClient.post()
-            .uri("chat/completions")
-            .bodyValue(chatRequest)
-            .retrieve()
-            .onStatus({ it.isError }) { response ->
-                response.bodyToMono(String::class.java).map {
-                    RuntimeException("AI service error: $it")
+        return try {
+            webClient.post()
+                .uri("chat/completions")
+                .bodyValue(chatRequest)
+                .retrieve()
+                .onStatus({ it.isError }) { response ->
+                    response.bodyToMono(String::class.java).flatMap {
+                        logger.warn("AI service returned error: {}", it)
+                        Mono.empty()
+                    }
                 }
-            }
-            .bodyToMono(ChatResponse::class.java)
-            .block()
+                .bodyToMono(ChatResponse::class.java)
+                .timeout(Duration.ofSeconds(5))
+                .onErrorResume {
+                    logger.warn("DeepSeek API error: {}", it.message)
+                    Mono.empty()
+                }
+                .block()
+        } catch (e: Exception) {
+            logger.warn("DeepSeek API call failed: {}", e.message)
+            null
+        }
     }
 
     // создает название заметки на основе ее содержимого
@@ -55,8 +72,14 @@ class AiService(
             stream = false
         )
 
-        return getChatResponse(chatRequest)?.choices?.firstOrNull()?.message?.content?.take(30)
-            ?: throw IllegalStateException("No AI response from assistant")
+        return getChatResponse(chatRequest)
+            ?.choices
+            ?.firstOrNull()
+            ?.message
+            ?.content
+            ?.take(255)
+            ?.trim()
+            ?: "Untitled"
 
     }
 
@@ -72,8 +95,13 @@ class AiService(
             stream = false
         )
 
-        return getChatResponse(chatRequest)?.choices?.firstOrNull()?.message?.content
-            ?: throw IllegalStateException("No AI response from assistant")
+        return getChatResponse(chatRequest)
+            ?.choices
+            ?.firstOrNull()
+            ?.message
+            ?.content
+            ?.trim()
+            ?: "Извините, сейчас я не могу ответить. Попробуйте позже."
     }
 
 }
