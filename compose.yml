@@ -107,6 +107,37 @@ services:
       redis:
         condition: service_healthy
 
+  note-service:
+    container_name: reflecta-note
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        MODULE: note-service
+    networks:
+      - reflecta-microservices
+    env_file:
+      - .env
+    depends_on:
+      discovery:
+        condition: service_healthy
+      postgres:
+        condition: service_healthy
+
+  ai-service:
+    container_name: reflecta-ai
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        MODULE: ai-service
+    networks:
+      - reflecta-microservices
+    env_file:
+      - .env
+    depends_on:
+      discovery:
+        condition: service_healthy
 
   redis:
     image: redis:8.0
@@ -122,23 +153,23 @@ services:
     networks:
       - reflecta-microservices
 
-  kafka:
-    image: bitnami/kafka:3.6.1
-    container_name: reflecta-kafka
-    ports:
-      - "9092:9092"
-    volumes:
-      - kafka-data:/bitnami/kafka
-    networks:
-      - reflecta-microservices
-    env_file:
-      - envs/kafka.env
-    healthcheck:
-      test: [ "CMD", "kafka-topics.sh", "--bootstrap-server", "localhost:9092", "--list" ]
-      interval: 10s
-      timeout: 10s
-      retries: 5
-    restart: unless-stopped
+#  kafka:
+#    image: bitnami/kafka:3.6.1
+#    container_name: reflecta-kafka
+#    ports:
+#      - "9092:9092"
+#    volumes:
+#      - kafka-data:/bitnami/kafka
+#    networks:
+#      - reflecta-microservices
+#    env_file:
+#      - envs/kafka.env
+#    healthcheck:
+#      test: [ "CMD", "kafka-topics.sh", "--bootstrap-server", "localhost:9092", "--list" ]
+#      interval: 10s
+#      timeout: 10s
+#      retries: 5
+#    restart: unless-stopped
 
   postgres:
     image: postgres:17.4
