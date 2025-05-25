@@ -14,3 +14,4 @@ eureka:
 
 ai:
   api-key: ${DEEPSEEK_API_KEY}
+  model: "deepseek-chat"

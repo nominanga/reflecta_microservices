@@ -24,8 +24,8 @@ class NoteService (
 ){
 
     private fun Message.toAiMessageDto(): AiMessageDto = AiMessageDto(
-        text = this.text,
-        sender = when (this.sender) {
+        content = this.text,
+        role = when (this.sender) {
             MessageSender.AI -> "assistant"
             MessageSender.USER -> "user"
         }
@@ -34,8 +34,8 @@ class NoteService (
     private fun createAiMessage(userId: Long, note: Note, previousMessages: List<Message>): Message {
         val username = userServiceClient.getUserName(userId)
         val noteAiMessage = AiMessageDto(
-            text = note.body,
-            sender = "user"
+            content = note.body,
+            role = "user"
         )
         val aiRequestDto = AiRequestDto(
             username = username,
