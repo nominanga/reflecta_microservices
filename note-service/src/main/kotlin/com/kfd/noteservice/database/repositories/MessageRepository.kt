@@ -5,6 +5,6 @@ import com.kfd.noteservice.database.entities.NoteThread
 import org.springframework.data.repository.CrudRepository
 
 interface MessageRepository : CrudRepository<Message, Long> {
-    fun findAllByNoteThreadOrderByCreatedAtDesc(noteThread: NoteThread): List<Message>
+    fun findAllByNoteThreadOrderByCreatedAtAsc(noteThread: NoteThread): List<Message>
     fun deleteAllByNoteThread(noteThread: NoteThread)
 }

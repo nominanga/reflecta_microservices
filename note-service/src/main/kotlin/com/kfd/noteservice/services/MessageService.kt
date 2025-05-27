@@ -19,7 +19,7 @@ class MessageService(
     }
 
     fun getMessages(noteThread: NoteThread): List<Message> {
-        return messageRepository.findAllByNoteThreadOrderByCreatedAtDesc(noteThread)
+        return messageRepository.findAllByNoteThreadOrderByCreatedAtAsc(noteThread)
     }
 
     fun deleteMessages(noteThread: NoteThread) {
