@@ -51,6 +51,7 @@ class UserExceptionHandler {
         return ResponseEntity.status(HttpStatus.METHOD_NOT_ALLOWED).body(responseBody)
     }
 
+    @Suppress("UnusedParameter")
     @ExceptionHandler(HttpMessageNotReadableException::class)
     fun handleUnreadable(ex: HttpMessageNotReadableException): ResponseEntity<Map<String, Any?>> {
         val body =

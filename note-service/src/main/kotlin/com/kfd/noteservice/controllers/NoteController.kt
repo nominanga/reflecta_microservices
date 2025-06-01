@@ -1,14 +1,14 @@
 package com.kfd.noteservice.controllers
 
-import com.kfd.noteservice.database.entities.Message
 import com.kfd.noteservice.database.entities.Note
 import com.kfd.noteservice.dto.message.MessageRequestDto
 import com.kfd.noteservice.dto.message.MessageResponseDto
 import com.kfd.noteservice.dto.note.NoteDetailedResponseDto
 import com.kfd.noteservice.dto.note.NoteRequestDto
 import com.kfd.noteservice.dto.note.NoteResponseDto
-import com.kfd.noteservice.services.MessageService
+import com.kfd.noteservice.services.AiMessageService
 import com.kfd.noteservice.services.NoteService
+import com.kfd.noteservice.utils.NoteDtoUtils
 import jakarta.validation.Valid
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.DeleteMapping
@@ -25,7 +25,8 @@ import org.springframework.web.bind.annotation.RestController
 @RequestMapping("/api/notes")
 class NoteController(
     private val noteService: NoteService,
-    private val messageService: MessageService,
+    private val aiMessageService: AiMessageService,
+    private val noteDtoUtils: NoteDtoUtils,
 ) {
     private fun Note.toResponseDto(): NoteResponseDto =
         NoteResponseDto(
@@ -36,24 +37,6 @@ class NoteController(
         )
 
     private fun List<Note>.toResponseDtoList(): List<NoteResponseDto> = this.map { it.toResponseDto() }
-
-    private fun Message.toResponseDto(): MessageResponseDto =
-        MessageResponseDto(
-            text = this.text,
-            sender = this.sender,
-        )
-
-    private fun mapNoteToDetailedDto(note: Note): NoteDetailedResponseDto {
-        val messages = messageService.getMessages(note.noteThread!!)
-        return NoteDetailedResponseDto(
-            id = note.id,
-            title = note.title,
-            body = note.body,
-            favorite = note.favorite,
-            createdAt = note.createdAt,
-            messages = messages.map { it.toResponseDto() },
-        )
-    }
 
     @GetMapping
     fun getAllUserNotes(
@@ -77,7 +60,7 @@ class NoteController(
         @RequestBody @Valid body: NoteRequestDto,
     ): ResponseEntity<NoteDetailedResponseDto> {
         val note = noteService.createNote(userId.toLong(), body)
-        return ResponseEntity.ok(mapNoteToDetailedDto(note))
+        return ResponseEntity.ok(noteDtoUtils.mapNoteToDetailedDto(note))
     }
 
     @PutMapping("/{id:\\d+}/set-favorite")
@@ -96,7 +79,7 @@ class NoteController(
         @RequestBody @Valid body: NoteRequestDto,
     ): ResponseEntity<NoteDetailedResponseDto> {
         val note = noteService.updateNote(id, userId.toLong(), body)
-        return ResponseEntity.ok(mapNoteToDetailedDto(note))
+        return ResponseEntity.ok(noteDtoUtils.mapNoteToDetailedDto(note))
     }
 
     @GetMapping("/{id:\\d+}")
@@ -105,7 +88,7 @@ class NoteController(
         @RequestHeader("X-User-Id") userId: String,
     ): ResponseEntity<NoteDetailedResponseDto> {
         val note = noteService.getNote(id, userId.toLong())
-        return ResponseEntity.ok(mapNoteToDetailedDto(note))
+        return ResponseEntity.ok(noteDtoUtils.mapNoteToDetailedDto(note))
     }
 
     @DeleteMapping("/{id:\\d+}")
@@ -123,7 +106,8 @@ class NoteController(
         @RequestHeader("X-User-Id") userId: String,
         @RequestBody body: MessageRequestDto,
     ): ResponseEntity<MessageResponseDto> {
-        val message = noteService.createUserMessage(id, userId.toLong(), body.text)
-        return ResponseEntity.ok(message.toResponseDto())
+        val note = noteService.getNote(id, userId.toLong())
+        val message = aiMessageService.createUserMessage(note, body.text)
+        return ResponseEntity.ok(noteDtoUtils.mapMessageToResponseDto(message))
     }
 }

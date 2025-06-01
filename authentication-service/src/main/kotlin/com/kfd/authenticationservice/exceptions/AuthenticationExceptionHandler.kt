@@ -88,12 +88,13 @@ class AuthenticationExceptionHandler {
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(responseBody)
     }
 
+    @Suppress("UnusedParameter")
     @ExceptionHandler(HttpMessageNotReadableException::class)
     fun handleUnreadable(ex: HttpMessageNotReadableException): ResponseEntity<Map<String, Any?>> {
         val body =
             mapOf(
                 "timestamp" to Instant.now(),
-                "status" to 400,
+                "status" to HttpStatus.BAD_REQUEST.value(),
                 "error" to "Bad Request",
                 "message" to "Malformed or missing request body",
             )

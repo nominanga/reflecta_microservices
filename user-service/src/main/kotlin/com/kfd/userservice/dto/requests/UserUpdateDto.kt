@@ -6,6 +6,7 @@ import jakarta.validation.constraints.NotEmpty
 import jakarta.validation.constraints.Pattern
 import jakarta.validation.constraints.Size
 
+@Suppress("MagicNumber")
 data class UserUpdateDto(
     @field:NotEmpty(message = "Username cannot be empty")
     @field:Size(max = 20, message = "Username cannot be longer than 20 characters")

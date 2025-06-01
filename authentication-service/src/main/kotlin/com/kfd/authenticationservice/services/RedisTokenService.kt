@@ -14,6 +14,10 @@ class RedisTokenService(
     private val redisTemplate: StringRedisTemplate,
     private val jwtGenerationService: JwtGenerationService,
 ) {
+    companion object {
+        private const val MILLISECONDS_IN_SECOND = 1000
+    }
+
     private data class RefreshTokenPayload(
         val userId: String,
         val refreshToken: String,
@@ -105,7 +109,10 @@ class RedisTokenService(
         redisTemplate.opsForValue().set(
             sessionKey,
             objectMapper.writeValueAsString(updatedPayload),
-            Duration.ofSeconds(jwtGenerationService.refreshTokenExpirationTime() / 1000),
+            Duration.ofSeconds(
+                jwtGenerationService.refreshTokenExpirationTime() /
+                    MILLISECONDS_IN_SECOND,
+            ),
         )
 
         return AuthResponseDto(

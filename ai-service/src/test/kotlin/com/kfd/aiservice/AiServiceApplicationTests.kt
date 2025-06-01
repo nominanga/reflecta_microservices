@@ -1,3 +1,5 @@
+@file:Suppress("EmptyFunctionBlock")
+
 package com.kfd.aiservice
 
 import org.junit.jupiter.api.Test
@@ -6,6 +8,5 @@ import org.springframework.boot.test.context.SpringBootTest
 @SpringBootTest
 class AiServiceApplicationTests {
     @Test
-    fun contextLoads() {
-    }
+    fun contextLoads() {}
 }

@@ -16,12 +16,10 @@ class MediaService(
         file: MultipartFile,
         userId: String,
     ): String {
-        if (file.isEmpty) throw IllegalArgumentException("File can not be empty")
+        require(!file.isEmpty) { "File can not be empty" }
 
         val contentType = file.contentType
-        if (contentType == null || !contentType.startsWith("image/")) {
-            throw IllegalArgumentException("File must be an image")
-        }
+        require(contentType != null && contentType.startsWith("image/")) { "File must be an image" }
 
         val uploadDir = Paths.get("/media/avatars")
         Files.createDirectories(uploadDir)

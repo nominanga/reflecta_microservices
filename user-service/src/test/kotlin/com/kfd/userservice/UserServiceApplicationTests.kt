@@ -1,3 +1,5 @@
+@file:Suppress("EmptyFunctionBlock")
+
 package com.kfd.userservice
 
 import org.junit.jupiter.api.Test

@@ -17,7 +17,11 @@ class UserService(
     private val userRepository: UserRepository,
     private val authenticationServiceClient: AuthenticationServiceClient,
 ) {
-    private val encoder: PasswordEncoder = BCryptPasswordEncoder(12)
+    companion object {
+        private const val ENCODING_STRENGTH = 12
+    }
+
+    private val encoder: PasswordEncoder = BCryptPasswordEncoder(ENCODING_STRENGTH)
 
     @Transactional
     fun createUser(userCredentials: RegistrationRequestDto): User {
@@ -54,7 +58,9 @@ class UserService(
     fun existsUserByEmail(email: String): Boolean = userRepository.existsByEmail(email)
 
     fun getUserByEmail(email: String): User {
-        val user = userRepository.findByEmail(email) ?: throw EntityNotFoundException("User with email: $email not found")
+        val user =
+            userRepository.findByEmail(email)
+                ?: throw EntityNotFoundException("User with email: $email not found")
         return user
     }
 

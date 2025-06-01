@@ -1,3 +1,5 @@
+@file:Suppress("SpreadOperator")
+
 package com.kfd.configserver
 
 import jakarta.annotation.PostConstruct

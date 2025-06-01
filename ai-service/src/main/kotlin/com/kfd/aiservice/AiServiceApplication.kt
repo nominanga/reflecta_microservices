@@ -1,3 +1,5 @@
+@file:Suppress("SpreadOperator")
+
 package com.kfd.aiservice
 
 import org.springframework.boot.autoconfigure.SpringBootApplication

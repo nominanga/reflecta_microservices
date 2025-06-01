@@ -16,7 +16,11 @@ class AuthenticationService(
     private val redisTokenService: RedisTokenService,
     private val userServiceClient: UserServiceClient,
 ) {
-    private val encoder: PasswordEncoder = BCryptPasswordEncoder(12)
+    companion object {
+        private const val ENCODING_STRENGTH = 12
+    }
+
+    private val encoder: PasswordEncoder = BCryptPasswordEncoder(ENCODING_STRENGTH)
 
     fun register(request: RegistrationRequestDto): AuthResponseDto {
         if (userServiceClient.existsUserByEmail(request.email)) {
@@ -36,7 +40,7 @@ class AuthenticationService(
             try {
                 userServiceClient.getUserByEmail(request.email)
             } catch (e: FeignException.NotFound) {
-                throw InvalidCredentialsException("Invalid email or password")
+                throw InvalidCredentialsException("Invalid email or password", e)
             }
 
         if (encoder.matches(request.password, user.hashedPassword)) {

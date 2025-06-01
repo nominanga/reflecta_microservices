@@ -34,6 +34,7 @@ class NoteExceptionHandler {
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(responseBody)
     }
 
+    @Suppress("UnusedParameter")
     @ExceptionHandler(HttpMessageNotReadableException::class)
     fun handleUnreadable(ex: HttpMessageNotReadableException): ResponseEntity<Map<String, Any?>> {
         val body =

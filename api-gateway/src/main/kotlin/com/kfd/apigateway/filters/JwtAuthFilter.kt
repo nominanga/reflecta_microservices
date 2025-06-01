@@ -2,6 +2,7 @@ package com.kfd.apigateway.filters
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import io.jsonwebtoken.ExpiredJwtException
+import io.jsonwebtoken.JwtException
 import io.jsonwebtoken.Jwts
 import io.jsonwebtoken.security.Keys
 import org.slf4j.LoggerFactory
@@ -69,7 +70,7 @@ class JwtAuthFilter(
         } catch (e: ExpiredJwtException) {
             logger.info("Token has expired: {}", e.message)
             unauthorizedResponse(exchange, "Token has expired")
-        } catch (e: Exception) {
+        } catch (e: JwtException) {
             logger.info("Invalid token: {}", e.message)
             unauthorizedResponse(exchange, "Invalid token")
         }

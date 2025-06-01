@@ -18,7 +18,7 @@ class MediaExceptionHandler {
         val body =
             mapOf(
                 "timestamp" to Instant.now(),
-                "status" to 400,
+                "status" to HttpStatus.BAD_REQUEST.value(),
                 "error" to "Bad Request",
                 "message" to ex.message,
             )
