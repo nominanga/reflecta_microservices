@@ -49,8 +49,8 @@ jobs:
           context: .
           push: true
           tags: |
-            ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}-ai-service:latest
-            ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}-ai-service:${{ github.sha }}
+            ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}/ai-service:latest
+            ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}/ai-service:${{ github.sha }}
           build-args: |
             MODULE=ai-service
 
@@ -60,8 +60,8 @@ jobs:
           context: .
           push: true
           tags: |
-            ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}-api-gateway:latest
-            ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}-api-gateway:${{ github.sha }}
+            ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}/api-gateway:latest
+            ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}/api-gateway:${{ github.sha }}
           build-args: |
             MODULE=api-gateway
 
@@ -71,8 +71,8 @@ jobs:
           context: .
           push: true
           tags: |
-            ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}-authentication-service:latest
-            ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}-authentication-service:${{ github.sha }}
+            ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}/authentication-service:latest
+            ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}/authentication-service:${{ github.sha }}
           build-args: |
             MODULE=authentication-service
 
@@ -82,8 +82,8 @@ jobs:
           context: .
           push: true
           tags: |
-            ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}-config-server:latest
-            ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}-config-server:${{ github.sha }}
+            ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}/config-server:latest
+            ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}/config-server:${{ github.sha }}
           build-args: |
             MODULE=config-server
 
@@ -93,8 +93,8 @@ jobs:
           context: .
           push: true
           tags: |
-            ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}-discovery-server:latest
-            ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}-discovery-server:${{ github.sha }}
+            ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}/discovery-server:latest
+            ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}/discovery-server:${{ github.sha }}
           build-args: |
             MODULE=discovery-server
 
@@ -104,8 +104,8 @@ jobs:
           context: .
           push: true
           tags: |
-            ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}-media-service:latest
-            ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}-media-service:${{ github.sha }}
+            ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}/media-service:latest
+            ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}/media-service:${{ github.sha }}
           build-args: |
             MODULE=media-service
 
@@ -115,8 +115,8 @@ jobs:
           context: .
           push: true
           tags: |
-            ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}-note-service:latest
-            ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}-note-service:${{ github.sha }}
+            ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}/note-service:latest
+            ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}/note-service:${{ github.sha }}
           build-args: |
             MODULE=note-service
 
@@ -126,8 +126,8 @@ jobs:
           context: .
           push: true
           tags: |
-            ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}-user-service:latest
-            ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}-user-service:${{ github.sha }}
+            ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}/user-service:latest
+            ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}/user-service:${{ github.sha }}
           build-args: |
             MODULE=user-service
 
