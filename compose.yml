@@ -182,4 +182,3 @@ networks:
 volumes:
   redis-data:
   postgres-data:
-  kafka-data:
