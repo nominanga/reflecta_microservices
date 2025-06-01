@@ -9,5 +9,5 @@ data class NoteDetailedResponseDto(
     val body: String,
     val favorite: Boolean,
     val createdAt: LocalDateTime,
-    val messages: List<MessageResponseDto>
+    val messages: List<MessageResponseDto>,
 )

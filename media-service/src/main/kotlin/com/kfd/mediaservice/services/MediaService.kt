@@ -10,16 +10,18 @@ import java.nio.file.StandardCopyOption
 
 @Service
 class MediaService(
-    private val userServiceClient: UserServiceClient
+    private val userServiceClient: UserServiceClient,
 ) {
-    fun uploadAvatar(file: MultipartFile, userId: String) : String {
+    fun uploadAvatar(
+        file: MultipartFile,
+        userId: String,
+    ): String {
         if (file.isEmpty) throw IllegalArgumentException("File can not be empty")
 
         val contentType = file.contentType
         if (contentType == null || !contentType.startsWith("image/")) {
             throw IllegalArgumentException("File must be an image")
         }
-
 
         val uploadDir = Paths.get("/media/avatars")
         Files.createDirectories(uploadDir)
@@ -30,11 +32,13 @@ class MediaService(
 
         file.inputStream.use { input -> Files.copy(input, filePath, StandardCopyOption.REPLACE_EXISTING) }
 
-        val uri =  "/media/avatars/$filename"
-        userServiceClient.updateAvatar(UserAvatarUpdateDto(
-            userId = userId,
-            uri = uri
-        ))
+        val uri = "/media/avatars/$filename"
+        userServiceClient.updateAvatar(
+            UserAvatarUpdateDto(
+                userId = userId,
+                uri = uri,
+            ),
+        )
         return uri
     }
 }

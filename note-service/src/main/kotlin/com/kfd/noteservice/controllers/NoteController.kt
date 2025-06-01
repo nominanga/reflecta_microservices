@@ -11,29 +11,39 @@ import com.kfd.noteservice.services.MessageService
 import com.kfd.noteservice.services.NoteService
 import jakarta.validation.Valid
 import org.springframework.http.ResponseEntity
-import org.springframework.web.bind.annotation.*
+import org.springframework.web.bind.annotation.DeleteMapping
+import org.springframework.web.bind.annotation.GetMapping
+import org.springframework.web.bind.annotation.PathVariable
+import org.springframework.web.bind.annotation.PostMapping
+import org.springframework.web.bind.annotation.PutMapping
+import org.springframework.web.bind.annotation.RequestBody
+import org.springframework.web.bind.annotation.RequestHeader
+import org.springframework.web.bind.annotation.RequestMapping
+import org.springframework.web.bind.annotation.RestController
 
 @RestController
 @RequestMapping("/api/notes")
 class NoteController(
     private val noteService: NoteService,
-    private val messageService: MessageService
+    private val messageService: MessageService,
 ) {
+    private fun Note.toResponseDto(): NoteResponseDto =
+        NoteResponseDto(
+            id = this.id,
+            title = this.title,
+            body = this.body,
+            favorite = this.favorite,
+        )
 
-    private fun Note.toResponseDto(): NoteResponseDto = NoteResponseDto(
-        id = this.id,
-        title = this.title,
-        body = this.body,
-        favorite = this.favorite
-    )
     private fun List<Note>.toResponseDtoList(): List<NoteResponseDto> = this.map { it.toResponseDto() }
 
-    private fun Message.toResponseDto(): MessageResponseDto = MessageResponseDto(
-        text = this.text,
-        sender = this.sender,
-    )
+    private fun Message.toResponseDto(): MessageResponseDto =
+        MessageResponseDto(
+            text = this.text,
+            sender = this.sender,
+        )
 
-    private fun mapNoteToDetailedDto(note: Note) : NoteDetailedResponseDto {
+    private fun mapNoteToDetailedDto(note: Note): NoteDetailedResponseDto {
         val messages = messageService.getMessages(note.noteThread!!)
         return NoteDetailedResponseDto(
             id = note.id,
@@ -41,15 +51,14 @@ class NoteController(
             body = note.body,
             favorite = note.favorite,
             createdAt = note.createdAt,
-            messages = messages.map { it.toResponseDto() }
+            messages = messages.map { it.toResponseDto() },
         )
     }
-
 
     @GetMapping
     fun getAllUserNotes(
         @RequestHeader("X-User-Id") userId: String,
-    ) : ResponseEntity<List<NoteResponseDto>> {
+    ): ResponseEntity<List<NoteResponseDto>> {
         val notesList = noteService.getAllUserNotes(userId.toLong())
         return ResponseEntity.ok(notesList.toResponseDtoList())
     }
@@ -65,8 +74,8 @@ class NoteController(
     @PostMapping("/create")
     fun createNote(
         @RequestHeader("X-User-Id") userId: String,
-        @RequestBody @Valid body: NoteRequestDto
-    ) : ResponseEntity<NoteDetailedResponseDto> {
+        @RequestBody @Valid body: NoteRequestDto,
+    ): ResponseEntity<NoteDetailedResponseDto> {
         val note = noteService.createNote(userId.toLong(), body)
         return ResponseEntity.ok(mapNoteToDetailedDto(note))
     }
@@ -75,7 +84,7 @@ class NoteController(
     fun noteSetFavorite(
         @PathVariable("id") id: Long,
         @RequestHeader("X-User-Id") userId: String,
-    ) : ResponseEntity<Void> {
+    ): ResponseEntity<Void> {
         noteService.noteSetFavorite(id, userId.toLong())
         return ResponseEntity.ok().build()
     }
@@ -84,8 +93,8 @@ class NoteController(
     fun updateNote(
         @PathVariable("id") id: Long,
         @RequestHeader("X-User-Id") userId: String,
-        @RequestBody @Valid body: NoteRequestDto
-    ) : ResponseEntity<NoteDetailedResponseDto> {
+        @RequestBody @Valid body: NoteRequestDto,
+    ): ResponseEntity<NoteDetailedResponseDto> {
         val note = noteService.updateNote(id, userId.toLong(), body)
         return ResponseEntity.ok(mapNoteToDetailedDto(note))
     }
@@ -94,7 +103,7 @@ class NoteController(
     fun getNote(
         @PathVariable("id") id: Long,
         @RequestHeader("X-User-Id") userId: String,
-    ) : ResponseEntity<NoteDetailedResponseDto>  {
+    ): ResponseEntity<NoteDetailedResponseDto> {
         val note = noteService.getNote(id, userId.toLong())
         return ResponseEntity.ok(mapNoteToDetailedDto(note))
     }
@@ -103,7 +112,7 @@ class NoteController(
     fun deleteNote(
         @PathVariable("id") id: Long,
         @RequestHeader("X-User-Id") userId: String,
-    ) : ResponseEntity<Void> {
+    ): ResponseEntity<Void> {
         noteService.deleteNote(id, userId.toLong())
         return ResponseEntity.noContent().build()
     }
@@ -112,8 +121,8 @@ class NoteController(
     fun sendMessage(
         @PathVariable("id") id: Long,
         @RequestHeader("X-User-Id") userId: String,
-        @RequestBody body: MessageRequestDto
-    ) : ResponseEntity<MessageResponseDto> {
+        @RequestBody body: MessageRequestDto,
+    ): ResponseEntity<MessageResponseDto> {
         val message = noteService.createUserMessage(id, userId.toLong(), body.text)
         return ResponseEntity.ok(message.toResponseDto())
     }

@@ -1,8 +1,8 @@
 package com.kfd.userservice.services
 
-import com.kfd.userservice.database.repositories.UserRepository
 import com.kfd.userservice.database.entities.User
 import com.kfd.userservice.database.entities.UserSettings
+import com.kfd.userservice.database.repositories.UserRepository
 import com.kfd.userservice.dto.requests.RegistrationRequestDto
 import com.kfd.userservice.dto.requests.UserUpdateDto
 import com.kfd.userservice.services.clients.AuthenticationServiceClient
@@ -15,30 +15,32 @@ import org.springframework.transaction.annotation.Transactional
 @Service
 class UserService(
     private val userRepository: UserRepository,
-    private val authenticationServiceClient: AuthenticationServiceClient
+    private val authenticationServiceClient: AuthenticationServiceClient,
 ) {
     private val encoder: PasswordEncoder = BCryptPasswordEncoder(12)
 
     @Transactional
     fun createUser(userCredentials: RegistrationRequestDto): User {
+        val user =
+            User(
+                username = userCredentials.username,
+                email = userCredentials.email,
+                password = userCredentials.password,
+            )
 
-        val user = User(
-            username = userCredentials.username,
-            email = userCredentials.email,
-            password = userCredentials.password
-        )
-
-        user.userSettings = UserSettings(
-            user = user
-        )
+        user.userSettings =
+            UserSettings(
+                user = user,
+            )
 
         return userRepository.save(user)
     }
 
     fun getUser(id: Long): User {
-        val user = userRepository.findById(id).orElseThrow {
-            EntityNotFoundException("User with id: $id not found")
-        }
+        val user =
+            userRepository.findById(id).orElseThrow {
+                EntityNotFoundException("User with id: $id not found")
+            }
         return user
     }
 
@@ -49,7 +51,6 @@ class UserService(
         userRepository.delete(user)
     }
 
-
     fun existsUserByEmail(email: String): Boolean = userRepository.existsByEmail(email)
 
     fun getUserByEmail(email: String): User {
@@ -58,7 +59,10 @@ class UserService(
     }
 
     @Transactional
-    fun updateUser(id: Long, userData: UserUpdateDto): User {
+    fun updateUser(
+        id: Long,
+        userData: UserUpdateDto,
+    ): User {
         val user = getUser(id)
         userData.username?.let { user.username = it }
         userData.newPassword?.let {
@@ -66,18 +70,20 @@ class UserService(
             user.password = hashedPassword
         }
 
-        userData.notificationFrequency?.let { user.userSettings?.notificationFrequency = it}
-        userData.cachedReportsAmount?.let { user.userSettings?.cachedReportsAmount = it}
-        userData.allowStatisticsNotify?.let { user.userSettings?.allowStatisticsNotify = it}
+        userData.notificationFrequency?.let { user.userSettings?.notificationFrequency = it }
+        userData.cachedReportsAmount?.let { user.userSettings?.cachedReportsAmount = it }
+        userData.allowStatisticsNotify?.let { user.userSettings?.allowStatisticsNotify = it }
 
         return userRepository.save(user)
     }
 
     @Transactional
-    fun updateAvatar(id: Long, mediaUri: String): User {
+    fun updateAvatar(
+        id: Long,
+        mediaUri: String,
+    ): User {
         val user = getUser(id)
         user.avatar = mediaUri
         return userRepository.save(user)
     }
-
 }

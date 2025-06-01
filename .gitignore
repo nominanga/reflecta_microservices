@@ -1,4 +1,3 @@
-envs/*.env
 .idea
 .gradle
 .env
@@ -7,3 +6,6 @@ envs/*.env
 **/.gradle
 media-service/media
 !media-service/media/avatars/default.png
+
+build
+**/build

@@ -22,9 +22,8 @@ import java.util.concurrent.TimeUnit
 class AiService(
     @Value("\${ai.api-key}") private val aiApiKey: String,
     @Value("\${ai.model}") private val aiModel: String,
-    private val webClientBuilder: WebClient.Builder
+    private val webClientBuilder: WebClient.Builder,
 ) {
-
     @PostConstruct
     fun logConfig() {
         logger.info("Using AI model: $aiModel")
@@ -34,56 +33,57 @@ class AiService(
     private val logger = LoggerFactory.getLogger(AiService::class.java)
     private val objectMapper = jacksonObjectMapper()
 
-    private val httpClient = HttpClient.create()
-        .option(ChannelOption.CONNECT_TIMEOUT_MILLIS, 10000)
-        .doOnConnected { conn ->
-            conn.addHandlerLast(ReadTimeoutHandler(60, TimeUnit.SECONDS))
-        }
-    private val webClient = webClientBuilder
-        .baseUrl("https://api.deepseek.com")
-        .clientConnector(ReactorClientHttpConnector(httpClient))
-        .defaultHeader("Content-Type", "application/json")
-        .defaultHeader("Authorization", "Bearer $aiApiKey")
-        .build()
+    private val httpClient =
+        HttpClient.create()
+            .option(ChannelOption.CONNECT_TIMEOUT_MILLIS, 10000)
+            .doOnConnected { conn ->
+                conn.addHandlerLast(ReadTimeoutHandler(60, TimeUnit.SECONDS))
+            }
+    private val webClient =
+        webClientBuilder
+            .baseUrl("https://api.deepseek.com")
+            .clientConnector(ReactorClientHttpConnector(httpClient))
+            .defaultHeader("Content-Type", "application/json")
+            .defaultHeader("Authorization", "Bearer $aiApiKey")
+            .build()
 
     private fun systemMessage(username: String): String {
         return """
-        Ты — профессиональный психолог, обладающий глубокими знаниями в области когнитивно-поведенческой терапии, гештальт-подхода и психоанализа. 
-        Твоя задача — анализировать личные записи пользователя, выявлять эмоциональные паттерны, когнитивные искажения, внутренние конфликты, а также давать чёткую и обоснованную обратную связь.
-        
-        Обращай внимание на формулировки, выбирай точные термины (например: деперсонализация, тревожность, эмоциональное выгорание, защитные механизмы, рационализация, прокрастинация).
-        
-        Используй метафоры, аналогии, конкретные примеры и терапевтические вопросы. Стимулируй глубокую саморефлексию. Показывай, как определённые мысли и убеждения влияют на чувства и поведение. 
-        
-        Не ограничивайся поддержкой — давай практические рекомендации, техники (например: дыхательные упражнения, ведение журнала мыслей, метод Сократа, "письмо внутреннему ребёнку").
-        
-        Будь внимательным и тактичным, но не уходи от сути — прямо обозначай внутренние противоречия, возможные ошибки мышления и избегания.
-        
-        Имя пользователя: "$username". Используй это имя точно в таком виде — **без перевода, склонения или транслитерации**. Только "$username".
-    """.trimIndent()
+            Ты — профессиональный психолог, обладающий глубокими знаниями в области когнитивно-поведенческой терапии, гештальт-подхода и психоанализа. 
+            Твоя задача — анализировать личные записи пользователя, выявлять эмоциональные паттерны, когнитивные искажения, внутренние конфликты, а также давать чёткую и обоснованную обратную связь.
+            
+            Обращай внимание на формулировки, выбирай точные термины (например: деперсонализация, тревожность, эмоциональное выгорание, защитные механизмы, рационализация, прокрастинация).
+            
+            Используй метафоры, аналогии, конкретные примеры и терапевтические вопросы. Стимулируй глубокую саморефлексию. Показывай, как определённые мысли и убеждения влияют на чувства и поведение. 
+            
+            Не ограничивайся поддержкой — давай практические рекомендации, техники (например: дыхательные упражнения, ведение журнала мыслей, метод Сократа, "письмо внутреннему ребёнку").
+            
+            Будь внимательным и тактичным, но не уходи от сути — прямо обозначай внутренние противоречия, возможные ошибки мышления и избегания.
+            
+            Имя пользователя: "$username". Используй это имя точно в таком виде — **без перевода, склонения или транслитерации**. Только "$username".
+            """.trimIndent()
     }
 
-
-    private fun getChatResponse(chatRequest: ChatRequest) : ChatResponse? {
-
+    private fun getChatResponse(chatRequest: ChatRequest): ChatResponse? {
         logger.info("Sending ChatRequest: {}", objectMapper.writeValueAsString(chatRequest))
 
-        val mono = webClient.post()
-            .uri("chat/completions")
-            .bodyValue(chatRequest)
-            .retrieve()
-            .onStatus({ it.isError }) { response ->
-                response.bodyToMono(String::class.java).flatMap {
-                    logger.warn("AI service returned error body: {}", it)
+        val mono =
+            webClient.post()
+                .uri("chat/completions")
+                .bodyValue(chatRequest)
+                .retrieve()
+                .onStatus({ it.isError }) { response ->
+                    response.bodyToMono(String::class.java).flatMap {
+                        logger.warn("AI service returned error body: {}", it)
+                        Mono.empty()
+                    }
+                }
+                .bodyToMono(ChatResponse::class.java)
+                .timeout(Duration.ofSeconds(60))
+                .onErrorResume {
+                    logger.warn("DeepSeek API error: {}", it.message)
                     Mono.empty()
                 }
-            }
-            .bodyToMono(ChatResponse::class.java)
-            .timeout(Duration.ofSeconds(60))
-            .onErrorResume {
-                logger.warn("DeepSeek API error: {}", it.message)
-                Mono.empty()
-            }
 
         logger.info("About to block and wait for DeepSeek response")
         val response = mono.block()
@@ -93,16 +93,21 @@ class AiService(
 
     // создает название заметки на основе ее содержимого
     fun generateTitle(content: String): String {
-        val chatRequest = ChatRequest(
-            model = aiModel,
-            messages = listOf(AiMessageDto(
-                content = "Скажи ровно одно самое подходящее название для этой заметки, " +
-                        "длиной не больше 30 символов. Не надо примеров, твой ответ должен содержать только " +
-                        "самое подходящее название.\nЗаметка:\n$content",
-                role = "user"
-            )),
-            stream = false
-        )
+        val chatRequest =
+            ChatRequest(
+                model = aiModel,
+                messages =
+                    listOf(
+                        AiMessageDto(
+                            content =
+                                "Скажи ровно одно самое подходящее название для этой заметки, " +
+                                    "длиной не больше 30 символов. Не надо примеров, твой ответ должен содержать только " +
+                                    "самое подходящее название.\nЗаметка:\n$content",
+                            role = "user",
+                        ),
+                    ),
+                stream = false,
+            )
 
         return getChatResponse(chatRequest)
             ?.choices
@@ -112,20 +117,21 @@ class AiService(
             ?.take(255)
             ?.trim()
             ?: "Untitled"
-
     }
 
     // отвечает пользователю на основе истории сообщений
-    fun generateReply(request: AiRequestDto) : String {
-        val systemAiMessage = AiMessageDto(
-            content = systemMessage(request.username),
-            role = "system"
-        )
-        val chatRequest = ChatRequest(
-            model = aiModel,
-            messages = listOf(systemAiMessage) + request.messages,
-            stream = false
-        )
+    fun generateReply(request: AiRequestDto): String {
+        val systemAiMessage =
+            AiMessageDto(
+                content = systemMessage(request.username),
+                role = "system",
+            )
+        val chatRequest =
+            ChatRequest(
+                model = aiModel,
+                messages = listOf(systemAiMessage) + request.messages,
+                stream = false,
+            )
 
         return getChatResponse(chatRequest)
             ?.choices
@@ -135,5 +141,4 @@ class AiService(
             ?.trim()
             ?: "Извините, сейчас я не могу ответить. Попробуйте позже."
     }
-
 }

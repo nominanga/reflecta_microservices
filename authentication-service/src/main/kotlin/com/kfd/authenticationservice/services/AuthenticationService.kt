@@ -14,9 +14,8 @@ import org.springframework.stereotype.Service
 @Service
 class AuthenticationService(
     private val redisTokenService: RedisTokenService,
-    private val userServiceClient: UserServiceClient
+    private val userServiceClient: UserServiceClient,
 ) {
-
     private val encoder: PasswordEncoder = BCryptPasswordEncoder(12)
 
     fun register(request: RegistrationRequestDto): AuthResponseDto {
@@ -33,11 +32,12 @@ class AuthenticationService(
     }
 
     fun login(request: LoginRequestDto): AuthResponseDto {
-        val user = try {
-            userServiceClient.getUserByEmail(request.email)
-        } catch (e: FeignException.NotFound) {
-            throw InvalidCredentialsException("Invalid email or password")
-        }
+        val user =
+            try {
+                userServiceClient.getUserByEmail(request.email)
+            } catch (e: FeignException.NotFound) {
+                throw InvalidCredentialsException("Invalid email or password")
+            }
 
         if (encoder.matches(request.password, user.hashedPassword)) {
             return redisTokenService.generateTokens(user.id)
@@ -46,15 +46,19 @@ class AuthenticationService(
         }
     }
 
-    fun refresh(refreshToken: String, sessionId: String): AuthResponseDto =
-        redisTokenService.refreshTokens(refreshToken, sessionId)
+    fun refresh(
+        refreshToken: String,
+        sessionId: String,
+    ): AuthResponseDto = redisTokenService.refreshTokens(refreshToken, sessionId)
 
-    fun logout(sessionId: String, userId: String) {
+    fun logout(
+        sessionId: String,
+        userId: String,
+    ) {
         redisTokenService.removeRefreshToken(sessionId, userId)
     }
 
     fun logoutAll(userId: String) {
         redisTokenService.removeAllRefreshTokensForUser(userId)
     }
-
 }

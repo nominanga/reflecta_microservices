@@ -8,14 +8,20 @@ import org.springframework.stereotype.Service
 
 @Service
 class MessageService(
-    private val messageRepository: MessageRepository
+    private val messageRepository: MessageRepository,
 ) {
-    fun createMessage(noteThread: NoteThread, text: String, sender: MessageSender): Message {
-        return messageRepository.save(Message(
-            noteThread = noteThread,
-            text = text,
-            sender = sender
-        ))
+    fun createMessage(
+        noteThread: NoteThread,
+        text: String,
+        sender: MessageSender,
+    ): Message {
+        return messageRepository.save(
+            Message(
+                noteThread = noteThread,
+                text = text,
+                sender = sender,
+            ),
+        )
     }
 
     fun getMessages(noteThread: NoteThread): List<Message> {
@@ -25,5 +31,4 @@ class MessageService(
     fun deleteMessages(noteThread: NoteThread) {
         messageRepository.deleteAllByNoteThread(noteThread)
     }
-
 }

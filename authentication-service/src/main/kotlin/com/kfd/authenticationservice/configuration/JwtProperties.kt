@@ -5,7 +5,7 @@ import org.springframework.stereotype.Component
 
 @Component
 @ConfigurationProperties(prefix = "jwt")
-data class JwtProperties (
+data class JwtProperties(
     var access: Access = Access(),
     var refresh: Refresh = Refresh(),
 ) {
@@ -13,6 +13,7 @@ data class JwtProperties (
         var secret: String = "",
         var expirationTime: Long = 0,
     )
+
     data class Refresh(
         var secret: String = "",
         var expirationTime: Long = 0,

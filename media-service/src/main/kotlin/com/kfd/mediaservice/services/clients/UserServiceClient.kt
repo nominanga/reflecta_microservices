@@ -9,6 +9,6 @@ import org.springframework.web.bind.annotation.RequestBody
 interface UserServiceClient {
     @PutMapping("/internal/user/update/avatar")
     fun updateAvatar(
-        @RequestBody body: UserAvatarUpdateDto
-    ) : Unit
+        @RequestBody body: UserAvatarUpdateDto,
+    ): Unit
 }

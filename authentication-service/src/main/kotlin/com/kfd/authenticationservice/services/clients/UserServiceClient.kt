@@ -10,13 +10,18 @@ import org.springframework.web.bind.annotation.RequestParam
 
 @FeignClient(name = "user-service")
 interface UserServiceClient {
-
     @PostMapping("/internal/user")
-    fun createUser(@RequestBody request: RegistrationRequestDto): UserAuthenticationResponseDto
+    fun createUser(
+        @RequestBody request: RegistrationRequestDto,
+    ): UserAuthenticationResponseDto
 
     @GetMapping("/internal/user/email")
-    fun getUserByEmail(@RequestParam email: String): UserAuthenticationResponseDto
+    fun getUserByEmail(
+        @RequestParam email: String,
+    ): UserAuthenticationResponseDto
 
     @GetMapping("/internal/user/email/exists")
-    fun existsUserByEmail(@RequestParam email: String): Boolean
+    fun existsUserByEmail(
+        @RequestParam email: String,
+    ): Boolean
 }

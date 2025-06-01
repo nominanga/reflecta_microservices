@@ -16,42 +16,53 @@ import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 
 @Service
-class NoteService (
+class NoteService(
     private val repository: NoteRepository,
     private val userServiceClient: UserServiceClient,
     private val aiServiceClient: AiServiceClient,
-    private val messageService: MessageService
-){
+    private val messageService: MessageService,
+) {
+    private fun Message.toAiMessageDto(): AiMessageDto =
+        AiMessageDto(
+            content = this.text,
+            role =
+                when (this.sender) {
+                    MessageSender.AI -> "assistant"
+                    MessageSender.USER -> "user"
+                },
+        )
 
-    private fun Message.toAiMessageDto(): AiMessageDto = AiMessageDto(
-        content = this.text,
-        role = when (this.sender) {
-            MessageSender.AI -> "assistant"
-            MessageSender.USER -> "user"
-        }
-    )
-
-    private fun createAiMessage(userId: Long, note: Note, previousMessages: List<Message>): Message {
+    private fun createAiMessage(
+        userId: Long,
+        note: Note,
+        previousMessages: List<Message>,
+    ): Message {
         val username = userServiceClient.getUserName(userId)
-        val noteAiMessage = AiMessageDto(
-            content = note.body,
-            role = "user"
-        )
-        val aiRequestDto = AiRequestDto(
-            username = username,
-            messages = listOf(noteAiMessage) + previousMessages.map { it.toAiMessageDto() }
-        )
+        val noteAiMessage =
+            AiMessageDto(
+                content = note.body,
+                role = "user",
+            )
+        val aiRequestDto =
+            AiRequestDto(
+                username = username,
+                messages = listOf(noteAiMessage) + previousMessages.map { it.toAiMessageDto() },
+            )
 
         val aiResponse = aiServiceClient.getAiResponse(aiRequestDto)
         return messageService.createMessage(note.noteThread!!, aiResponse, MessageSender.AI)
     }
 
-    private fun generateTitle(body: String) : String {
+    private fun generateTitle(body: String): String {
         return aiServiceClient.generateTitle(body)
     }
 
     @Transactional
-    fun createUserMessage(noteId: Long, userId: Long, text: String?) : Message {
+    fun createUserMessage(
+        noteId: Long,
+        userId: Long,
+        text: String?,
+    ): Message {
         val note = getNote(noteId, userId)
         if (text.isNullOrBlank()) {
             throw IllegalArgumentException("Message can not be empty")
@@ -64,13 +75,21 @@ class NoteService (
     }
 
     @Transactional
-    fun createNote(userId: Long, noteRequestDto: NoteRequestDto) : Note {
-        val note = Note(
-            userId = userId,
-            title = if (!noteRequestDto.title.isNullOrBlank()) noteRequestDto.title
-            else generateTitle(noteRequestDto.body),
-            body = noteRequestDto.body
-        )
+    fun createNote(
+        userId: Long,
+        noteRequestDto: NoteRequestDto,
+    ): Note {
+        val note =
+            Note(
+                userId = userId,
+                title =
+                    if (!noteRequestDto.title.isNullOrBlank()) {
+                        noteRequestDto.title
+                    } else {
+                        generateTitle(noteRequestDto.body)
+                    },
+                body = noteRequestDto.body,
+            )
 
         val noteThread = NoteThread(note)
         note.noteThread = noteThread
@@ -80,13 +99,15 @@ class NoteService (
         createAiMessage(userId, savedNote, messages)
 
         return savedNote
-
     }
 
-    fun getNote(noteId: Long, userId: Long) : Note {
-
-        val note = repository.findById(noteId)
-            .orElseThrow { throw EntityNotFoundException("Note not found") }
+    fun getNote(
+        noteId: Long,
+        userId: Long,
+    ): Note {
+        val note =
+            repository.findById(noteId)
+                .orElseThrow { throw EntityNotFoundException("Note not found") }
         if (userId != note.userId) {
             throw ForbiddenException("This note does not belong to this user")
         }
@@ -103,11 +124,19 @@ class NoteService (
     }
 
     @Transactional
-    fun updateNote(noteId: Long, userId: Long, noteRequestDto: NoteRequestDto) : Note {
+    fun updateNote(
+        noteId: Long,
+        userId: Long,
+        noteRequestDto: NoteRequestDto,
+    ): Note {
         val note = getNote(noteId, userId)
 
-        note.title = if (!noteRequestDto.title.isNullOrBlank()) noteRequestDto.title
-        else generateTitle(noteRequestDto.body)
+        note.title =
+            if (!noteRequestDto.title.isNullOrBlank()) {
+                noteRequestDto.title
+            } else {
+                generateTitle(noteRequestDto.body)
+            }
         note.body = noteRequestDto.body
 
         messageService.deleteMessages(note.noteThread!!)
@@ -120,17 +149,21 @@ class NoteService (
     }
 
     @Transactional
-    fun deleteNote(noteId: Long, userId: Long) {
+    fun deleteNote(
+        noteId: Long,
+        userId: Long,
+    ) {
         val note = getNote(noteId, userId)
         repository.delete(note)
     }
 
     @Transactional
-    fun noteSetFavorite(noteId: Long, userId: Long) {
+    fun noteSetFavorite(
+        noteId: Long,
+        userId: Long,
+    ) {
         val note = getNote(noteId, userId)
         note.favorite = !note.favorite
         repository.save(note)
     }
-
-
 }

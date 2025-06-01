@@ -8,6 +8,6 @@ import org.springframework.web.bind.annotation.RequestHeader
 interface AuthenticationServiceClient {
     @PostMapping("/api/auth/logout/all")
     fun logoutAll(
-        @RequestHeader("X-User-Id") userId: String
-    ) : Unit
+        @RequestHeader("X-User-Id") userId: String,
+    ): Unit
 }

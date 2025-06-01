@@ -8,8 +8,12 @@ import org.springframework.web.bind.annotation.RequestBody
 @FeignClient(name = "ai-service")
 interface AiServiceClient {
     @PostMapping("/ai/title")
-    fun generateTitle(@RequestBody content: String) : String
+    fun generateTitle(
+        @RequestBody content: String,
+    ): String
 
     @PostMapping("/ai/respond")
-    fun getAiResponse(@RequestBody body: AiRequestDto) : String
+    fun getAiResponse(
+        @RequestBody body: AiRequestDto,
+    ): String
 }

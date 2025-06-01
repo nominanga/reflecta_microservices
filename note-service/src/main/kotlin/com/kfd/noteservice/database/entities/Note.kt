@@ -1,6 +1,13 @@
 package com.kfd.noteservice.database.entities
 
-import jakarta.persistence.*
+import jakarta.persistence.CascadeType
+import jakarta.persistence.Column
+import jakarta.persistence.Entity
+import jakarta.persistence.GeneratedValue
+import jakarta.persistence.GenerationType
+import jakarta.persistence.Id
+import jakarta.persistence.OneToOne
+import jakarta.persistence.Table
 import org.hibernate.annotations.CreationTimestamp
 import org.hibernate.annotations.UpdateTimestamp
 import java.time.LocalDateTime
@@ -10,22 +17,20 @@ import java.time.LocalDateTime
 class Note(
     @Column
     var title: String?,
-
     @Column(columnDefinition = "TEXT")
     var body: String,
-
     @Column(name = "user_id")
-    val userId: Long
+    val userId: Long,
 ) {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     var id: Long = 0
 
-    @Column(name="created_at")
+    @Column(name = "created_at")
     @CreationTimestamp
     val createdAt: LocalDateTime = LocalDateTime.now()
 
-    @Column(name="updated_at")
+    @Column(name = "updated_at")
     @UpdateTimestamp
     var updatedAt: LocalDateTime = LocalDateTime.now()
 

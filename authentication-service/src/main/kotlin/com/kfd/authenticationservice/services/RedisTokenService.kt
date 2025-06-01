@@ -6,7 +6,7 @@ import com.kfd.authenticationservice.exceptions.UnauthorizedException
 import org.springframework.data.redis.core.StringRedisTemplate
 import org.springframework.stereotype.Service
 import java.time.Duration
-import java.util.*
+import java.util.UUID
 
 @Service
 class RedisTokenService(
@@ -14,10 +14,9 @@ class RedisTokenService(
     private val redisTemplate: StringRedisTemplate,
     private val jwtGenerationService: JwtGenerationService,
 ) {
-
     private data class RefreshTokenPayload(
         val userId: String,
-        val refreshToken: String
+        val refreshToken: String,
     )
 
     fun cleanupExpiredSessionsForUser(userId: String) {
@@ -31,16 +30,16 @@ class RedisTokenService(
         }
     }
 
-
     fun generateTokens(userId: String): AuthResponseDto {
         val accessToken = jwtGenerationService.generateAccessToken(userId)
         val refreshToken = jwtGenerationService.generateRefreshToken(userId)
         val sessionId = UUID.randomUUID().toString()
 
-        val payload = RefreshTokenPayload(
-            userId = userId,
-            refreshToken = refreshToken
-        )
+        val payload =
+            RefreshTokenPayload(
+                userId = userId,
+                refreshToken = refreshToken,
+            )
 
         val sessionKey = "session:$sessionId"
         val userSessionsKey = "user_sessions:$userId"
@@ -49,7 +48,7 @@ class RedisTokenService(
         redisTemplate.opsForValue().set(
             sessionKey,
             objectMapper.writeValueAsString(payload),
-            duration
+            duration,
         )
 
         cleanupExpiredSessionsForUser(userId)
@@ -58,14 +57,18 @@ class RedisTokenService(
         return AuthResponseDto(
             accessToken,
             refreshToken,
-            sessionId
+            sessionId,
         )
     }
 
-    fun removeRefreshToken(sessionId: String, userId: String) {
+    fun removeRefreshToken(
+        sessionId: String,
+        userId: String,
+    ) {
         val sessionKey = "session:$sessionId"
-        val stored = redisTemplate.opsForValue().get(sessionKey)
-            ?: throw UnauthorizedException("Refresh token is expired or invalid")
+        val stored =
+            redisTemplate.opsForValue().get(sessionKey)
+                ?: throw UnauthorizedException("Refresh token is expired or invalid")
 
         val data = objectMapper.readValue(stored, RefreshTokenPayload::class.java)
         if (data.userId != userId) {
@@ -76,10 +79,14 @@ class RedisTokenService(
         cleanupExpiredSessionsForUser(userId)
     }
 
-    fun refreshTokens(refreshToken: String, sessionId: String): AuthResponseDto {
+    fun refreshTokens(
+        refreshToken: String,
+        sessionId: String,
+    ): AuthResponseDto {
         val sessionKey = "session:$sessionId"
-        val stored = redisTemplate.opsForValue().get(sessionKey)
-            ?: throw UnauthorizedException("Session is no longer active")
+        val stored =
+            redisTemplate.opsForValue().get(sessionKey)
+                ?: throw UnauthorizedException("Session is no longer active")
 
         val data = objectMapper.readValue(stored, RefreshTokenPayload::class.java)
         if (data.refreshToken != refreshToken) {
@@ -89,24 +96,24 @@ class RedisTokenService(
         val newAccessToken = jwtGenerationService.generateAccessToken(data.userId)
         val newRefreshToken = jwtGenerationService.generateRefreshToken(data.userId)
 
-        val updatedPayload = RefreshTokenPayload(
-            userId = data.userId,
-            refreshToken = newRefreshToken
-        )
+        val updatedPayload =
+            RefreshTokenPayload(
+                userId = data.userId,
+                refreshToken = newRefreshToken,
+            )
 
         redisTemplate.opsForValue().set(
             sessionKey,
             objectMapper.writeValueAsString(updatedPayload),
-            Duration.ofSeconds(jwtGenerationService.refreshTokenExpirationTime() / 1000)
+            Duration.ofSeconds(jwtGenerationService.refreshTokenExpirationTime() / 1000),
         )
 
         return AuthResponseDto(
             accessToken = newAccessToken,
             refreshToken = newRefreshToken,
-            sessionId = sessionId
+            sessionId = sessionId,
         )
     }
-
 
     fun removeAllRefreshTokensForUser(userId: String) {
         val userSessionsKey = "user_sessions:$userId"
